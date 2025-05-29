@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <PackageId>SharpEventBus</PackageId>
+	<Description>SharpEventBus is a lightweight, in-memory event bus library for modern .NET applications.</Description>
+    <PackageTags>eventbus;events;messaging;pubsub;event-driven;in-memoery;modern;csharp;dotnet;library;synchronous</PackageTags>
+    <Title>Sharp Event Bus</Title>
+    <Authors>rusjaell</Authors>
+    <Copyright></Copyright>
+    <RepositoryUrl>https://github.com/rusjaell/sharp-event-bus</RepositoryUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+	
+  <ItemGroup>
+	<InternalsVisibleTo Include="SharpEventBus.Tests" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+</Project>
