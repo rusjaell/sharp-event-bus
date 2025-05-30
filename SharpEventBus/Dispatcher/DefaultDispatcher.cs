@@ -1,5 +1,6 @@
 ﻿using SharpEventBus.Event;
 using SharpEventBus.Subscriber;
+using System.Runtime.InteropServices;
 
 namespace SharpEventBus.Dispatcher;
 
@@ -10,12 +11,11 @@ namespace SharpEventBus.Dispatcher;
 internal sealed class DefaultEventDispatcher : IEventDispatcher
 {
     /// <inheritdoc />
-    public void Dispatch(IEvent e, IEnumerable<ISubscriber> subscribers)
+    public void Dispatch(IEvent e, in Span<ISubscriber> subscribers)
     {
         ArgumentNullException.ThrowIfNull(e);
-        ArgumentNullException.ThrowIfNull(subscribers);
-        
-        foreach (var handler in subscribers)
-            handler.OnEvent(e);
+
+        for (var i = 0; i < subscribers.Length; i++)
+            subscribers[i].OnEvent(e);
     }
 }

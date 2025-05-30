@@ -13,14 +13,14 @@ public interface IEventBus
     /// </summary>
     /// <typeparam name="T">The type of event being published.</typeparam>
     /// <param name="e">The event instance to publish.</param>
-    void PublishEvent<T>(T e) where T : IEvent;
+    void PublishEvent<T>(T e) where T : class, IEvent;
 
     /// <summary>
     /// Subscribes a handler to receive notifications for a specific event type.
     /// </summary>
     /// <typeparam name="T">The type of event to subscribe to.</typeparam>
     /// <param name="subscriber">The subscriber instance that will handle the event.</param>
-    void Subscribe<T>(ISubscriber<T> subscriber) where T : IEvent;
+    void Subscribe<T>(ISubscriber<T> subscriber) where T : class, IEvent;
 
     /// <summary>
     /// Processes all queued events test until the queue is empty.
