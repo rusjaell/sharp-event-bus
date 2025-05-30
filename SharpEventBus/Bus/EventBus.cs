@@ -41,7 +41,7 @@ public sealed class EventBus : IEventBus
     /// <typeparam name="T">The event type.</typeparam>
     /// <param name="e">The event instance to publish.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="e"/> is null.</exception>
-    public void PublishEvent<T>(T e) where T : IEvent
+    public void PublishEvent<T>(T e) where T : class, IEvent
     {
         ArgumentNullException.ThrowIfNull(e);
         _eventQueue.Enqueue(e);
@@ -53,7 +53,7 @@ public sealed class EventBus : IEventBus
     /// <typeparam name="T">The event type to subscribe to.</typeparam>
     /// <param name="subscriber">The subscriber that will handle the event.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="subscriber"/> is null.</exception>
-    public void Subscribe<T>(ISubscriber<T> subscriber) where T : IEvent
+    public void Subscribe<T>(ISubscriber<T> subscriber) where T : class, IEvent
     {
         ArgumentNullException.ThrowIfNull(subscriber);
 
@@ -80,7 +80,10 @@ public sealed class EventBus : IEventBus
 
             var type = e!.GetType();
             if (_subscribers.TryGetValue(type, out var handlers))
-                _eventDispatcher.Dispatch(e, handlers);
+            {
+                var span = CollectionsMarshal.AsSpan(handlers);
+                _eventDispatcher.Dispatch(e, in span);
+            }
         }
     }
 
@@ -101,7 +104,10 @@ public sealed class EventBus : IEventBus
 
             var type = e!.GetType();
             if (_subscribers.TryGetValue(type, out var handlers))
-                _eventDispatcher.Dispatch(e, handlers);
+{
+                var span = CollectionsMarshal.AsSpan(handlers);
+                _eventDispatcher.Dispatch(e, in span);
+            }
             return true;
         }
         return false;
