@@ -21,7 +21,7 @@ using SharpEventBus;
 using SharpEventBus.Events;
 using SharpEventBus.Subscribers;
 
-//Manual Custom Configuration
+// Manual Custom Configuration
 var configurationBuilder = EventBusConfigurationBuilder.Create(builder =>
 {
     builder.WithDebugLogging();
@@ -30,10 +30,10 @@ var configurationBuilder = EventBusConfigurationBuilder.Create(builder =>
 // Custom configuration
 var eventBus = EventBusBuilder.Create(options =>
 {
-    // with a manual builder
+    // With a manual builder
     options.WithConfiguration(configurationBuilder);
 
-    // with a builder
+    // With a auto builder
     options.WithConfiguration(builder =>
     {
         builder.WithDebugLogging();
