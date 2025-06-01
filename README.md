@@ -21,6 +21,25 @@ using SharpEventBus;
 using SharpEventBus.Events;
 using SharpEventBus.Subscribers;
 
+//Manual Custom Configuration
+var configurationBuilder = EventBusConfigurationBuilder.Create(builder =>
+{
+    builder.WithDebugLogging();
+});
+
+// Custom configuration
+var eventBus = EventBusBuilder.Create(options =>
+{
+    // with a manual builder
+    options.WithConfiguration(configurationBuilder);
+
+    // with a builder
+    options.WithConfiguration(builder =>
+    {
+        builder.WithDebugLogging();
+    });
+});
+
 // Create a default EventBus instance
 var eventBus = EventBusBuilder.Create();
 
