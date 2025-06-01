@@ -12,6 +12,7 @@ internal sealed class Program
         // Manual Configuration
         var configurationBuilder = EventBusConfigurationBuilder.Create(builder =>
         {
+            builder.WithDebugLogging();
         });
 
         // custom configuration

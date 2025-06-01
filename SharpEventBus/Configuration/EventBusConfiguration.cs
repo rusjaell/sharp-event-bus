@@ -7,9 +7,10 @@ namespace SharpEventBus.Configuration;
 /// </summary>
 public sealed class EventBusConfiguration
 {
+    public readonly bool DebugLogging;
 
-
-    internal EventBusConfiguration()
+    internal EventBusConfiguration(bool debugLogging)
     {
+        DebugLogging = debugLogging;
     }
 }

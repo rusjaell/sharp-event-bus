@@ -44,6 +44,9 @@ public sealed class EventBus : IEventBus
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="e"/> is null.</exception>
     public void PublishEvent<T>(T e) where T : class, IEvent
     {
+        if (_configuration.DebugLogging)
+            Console.WriteLine($"[EventBus] PublishEvent: {e.GetType().Name}");
+
         ArgumentNullException.ThrowIfNull(e);
         _eventQueue.Enqueue(e);
     }
@@ -61,12 +64,18 @@ public sealed class EventBus : IEventBus
             list = [];
 
         list.Add(subscriber);
+
+        if (_configuration.DebugLogging)
+            Console.WriteLine($"[EventBus] Subscribe: {type.Name} was added to list of Subscribers now has {_subscribers.Count} active Subscribers");
     }
 
     /// <inheritdoc/>
     /// <exception cref="EventQueueTryDequeueException">Thrown if a null event is unexpectedly dequeued.</exception>
     public void ConsumeEvents()
     {
+        if (_configuration.DebugLogging)
+            Console.WriteLine($"[EventBus] ConsumeEvents: {_eventQueue.Count} in Queue");
+
         while (_eventQueue.TryDequeue(out var e))
         {
             if (e == null)
@@ -79,6 +88,9 @@ public sealed class EventBus : IEventBus
     /// <exception cref="EventQueueTryDequeueException">Thrown if a null event is unexpectedly dequeued.</exception>
     public bool ConsumeOneEvent()
     {
+        if (_configuration.DebugLogging)
+            Console.WriteLine($"[EventBus] ConsumeOneEvent: {_eventQueue.Count} in Queue");
+
         if (_eventQueue.TryDequeue(out var e))
         {
             if (e == null)
@@ -96,8 +108,16 @@ public sealed class EventBus : IEventBus
     internal void DispatchEvent(IEvent e)
     {
         var type = e.GetType();
+
         if (!_subscribers.TryGetValue(type, out var handlers))
+        {
+            if (_configuration.DebugLogging)
+                Console.WriteLine($"[EventBus] DispatchEvent: There is no Subscribers for event: {type.Name}");
             return;
+        }
+
+        if (_configuration.DebugLogging)
+            Console.WriteLine($"[EventBus] DispatchEvent: {type.Name}");
         
         var span = CollectionsMarshal.AsSpan(handlers);
         _eventDispatcher.Dispatch(e, in span);
