@@ -23,7 +23,7 @@ public interface IEventBus
     void Subscribe<T>(ISubscriber<T> subscriber) where T : class, IEvent;
 
     /// <summary>
-    /// Processes all queued events test until the queue is empty.
+    /// Processes all queued events.
     /// </summary>
     void ConsumeEvents();
 

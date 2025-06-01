@@ -13,6 +13,9 @@ internal sealed class DefaultEventQueue : IEventQueue
     public bool IsEmpty => _queue.Count == 0;
 
     /// <inheritdoc />
+    public int Count => _queue.Count;
+
+    /// <inheritdoc />
     public void Enqueue(IEvent e)
     {
         ArgumentNullException.ThrowIfNull(e);

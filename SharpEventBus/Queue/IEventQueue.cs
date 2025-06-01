@@ -13,6 +13,11 @@ public interface IEventQueue
     bool IsEmpty { get; }
 
     /// <summary>
+    /// Gets the number of events currently in the event queue.
+    /// </summary>
+    int Count { get; }
+
+    /// <summary>
     /// Enqueues an event into the queue.
     /// </summary>
     /// <param name="e">The event to enqueue.</param>

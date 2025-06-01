@@ -5,7 +5,7 @@ A simple, lightweight, in-memory event bus library for modern .NET applications.
 SharpEventBus provides a synchronous event bus that allows publishing and subscribing to events within your application. It supports event queueing and dispatching synchronously.
 
 ## Planned Features
-- [ ] Configurable Settings  
+- [x] Configurable Settings  
 - [ ] Event Triggers  
 - [ ] Event Hooks Support  
 - [ ] Event Chaining Support  

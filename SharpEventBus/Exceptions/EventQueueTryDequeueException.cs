@@ -1,5 +1,6 @@
 ﻿using SharpEventBus.Event;
 using SharpEventBus.Queue;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SharpEventBus.Exceptions;
 
@@ -14,5 +15,5 @@ internal class EventQueueTryDequeueException : InvalidOperationException
     {
     }
 
-    internal static void Throw() => throw new EventQueueTryDequeueException();
+    [DoesNotReturn] internal static void Throw() => throw new EventQueueTryDequeueException();
 }

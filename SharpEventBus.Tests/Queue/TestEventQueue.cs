@@ -5,11 +5,12 @@ namespace SharpEventBus.Tests.Queue;
 
 internal sealed class TestEventQueue : IEventQueue
 {
-    public readonly List<IEvent> EnqueuedEvents = [];
-    
     private readonly Queue<IEvent> _queue = [];
+    
+    public readonly List<IEvent> EnqueuedEvents = [];
 
     public bool IsEmpty => _queue.Count == 0;
+    public int Count => _queue.Count;
 
     public void Enqueue(IEvent e)
     {
