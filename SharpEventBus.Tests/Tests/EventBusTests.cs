@@ -13,8 +13,8 @@ public static class EventBusTests
     [Fact]
     public static void Constructor_ShouldThrowArgumentNullException()
     {
-        var queueException = Assert.Throws<ArgumentNullException>(() => new EventBus(null!, new DefaultEventDispatcher()));
-        var dispatcherException = Assert.Throws<ArgumentNullException>(() => new EventBus(new DefaultEventQueue(), null!));
+        var queueException = Assert.Throws<ArgumentNullException>(() => new EventBus(null, new DefaultEventDispatcher(), null));
+        var dispatcherException = Assert.Throws<ArgumentNullException>(() => new EventBus(new DefaultEventQueue(), null, null));
 
         Assert.Equal("eventQueue", queueException.ParamName);
         Assert.Equal("eventDispatcher", dispatcherException.ParamName);

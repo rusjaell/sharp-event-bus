@@ -1,4 +1,5 @@
 ﻿using SharpEventBus.Bus;
+using SharpEventBus.Configuration;
 using SharpEventBus.Example.Events;
 using SharpEventBus.Example.Subscribers;
 
@@ -8,8 +9,26 @@ internal sealed class Program
 {
     public static async Task Main(string[] args)
     {
-        // Create an default EventBus
-        var eventBus = EventBusBuilder.Create();
+        // Manual Configuration
+        var configurationBuilder = EventBusConfigurationBuilder.Create(builder =>
+        {
+            builder.WithDebugLogging();
+        });
+
+        // custom configuration
+        var eventBus = EventBusBuilder.Create(options =>
+        {
+            // with a manual builder
+            options.WithConfiguration(configurationBuilder);
+
+            // with a builder
+            //options.WithConfiguration(builder =>
+            //{
+            //});
+        });
+
+        // Create a default EventBus
+        //var eventBus = EventBusBuilder.Create();
 
         // Create a custom-implemented EventBus
         //var eventBus = EventBusBuilder.Create(options =>
@@ -79,9 +98,47 @@ internal sealed class Program
         if (wasOrderPlaced)
         {
             eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
             return;
         }
 
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
         eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
     }
 }
