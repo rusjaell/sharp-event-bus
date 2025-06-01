@@ -1,24 +1,8 @@
 ﻿using SharpEventBus.Bus;
-using SharpEventBus.Event;
-using SharpEventBus.Subscriber;
+using SharpEventBus.Example.Events;
+using SharpEventBus.Example.Subscribers;
 
 namespace SharpEventBus.Example;
-
-// Event representing a order being placed
-public record class OrderPlacedEvent(string OrderId, DateTime Timestamp) : IEvent;
-
-// Event representing a order being cancelled
-public record class OrderCancelledEvent(string OrderId, string Reason) : IEvent;
-
-// Subscriber that handles OrderPlacedEvent events
-public class OrderPlacedSubscriber : SubscriberBase<OrderPlacedEvent>
-{
-    // Called when an OrderPlacedEvent is published
-    public override void OnEvent(OrderPlacedEvent e)
-    {
-        Console.WriteLine($"Order placed: {e.OrderId} at {e.Timestamp}");
-    }
-}
 
 internal sealed class Program
 {
@@ -39,12 +23,12 @@ internal sealed class Program
 
         // Creates a Subscriber for the OrderPlacedEvent events
         eventBus.Subscribe(new OrderPlacedSubscriber());
+        eventBus.Subscribe(new OrderCancelledSubscriber());
 
         // Setup cancellation token source to allow graceful shutdown
         using var cts = new CancellationTokenSource();
 
         // Listen for Ctrl+C key press to trigger cancellation
-
         Console.CancelKeyPress += (sender, eventArgs) =>
         {
             Console.WriteLine("Cancellation requested, stopping...");
@@ -53,7 +37,7 @@ internal sealed class Program
             
             eventArgs.Cancel = true;
         };
-
+         
         Console.WriteLine("Starting event publishing loop. Press Ctrl+C to stop.");
 
         try
@@ -89,7 +73,6 @@ internal sealed class Program
         if (chance <= 0.5)
             return;
 
-        // Generate a unique order ID for the event
         var orderId = Guid.NewGuid().ToString();
 
         var wasOrderPlaced = random.NextDouble() > 0.5;

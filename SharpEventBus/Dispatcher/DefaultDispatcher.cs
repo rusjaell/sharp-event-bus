@@ -1,6 +1,5 @@
 ﻿using SharpEventBus.Event;
 using SharpEventBus.Subscriber;
-using System.Runtime.InteropServices;
 
 namespace SharpEventBus.Dispatcher;
 
