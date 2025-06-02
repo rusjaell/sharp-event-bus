@@ -1,4 +1,5 @@
 ﻿using SharpEventBus.Bus;
+using SharpEventBus.Configuration;
 using SharpEventBus.Dispatcher;
 using SharpEventBus.Queue;
 using SharpEventBus.Tests.Dispatcher;
@@ -13,11 +14,17 @@ public static class EventBusTests
     [Fact]
     public static void Constructor_ShouldThrowArgumentNullException()
     {
-        var queueException = Assert.Throws<ArgumentNullException>(() => new EventBus(null, new DefaultEventDispatcher(), null));
-        var dispatcherException = Assert.Throws<ArgumentNullException>(() => new EventBus(new DefaultEventQueue(), null, null));
+        var dispatcher = new DefaultEventDispatcher();
+        var queue = new DefaultEventQueue();
+        var config = EventBusConfigurationBuilder.Create();
+
+        var queueException = Assert.Throws<ArgumentNullException>(() => new EventBus(null, dispatcher, config));
+        var dispatcherException = Assert.Throws<ArgumentNullException>(() => new EventBus(queue, null, config));
+        var configurationException = Assert.Throws<ArgumentNullException>(() => new EventBus(queue, dispatcher, null));
 
         Assert.Equal("eventQueue", queueException.ParamName);
         Assert.Equal("eventDispatcher", dispatcherException.ParamName);
+        Assert.Equal("configuration", configurationException.ParamName);
     }
 
     [Fact]
