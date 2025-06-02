@@ -5,40 +5,40 @@ using SharpEventBus.Queue;
 namespace SharpEventBus.Bus;
 
 /// <summary>
-/// Builder for configuring and creating instances of <see cref="EventBus"/>.
+/// Builder for configuring and creating instances of <see cref="SyncEventBus"/>.
 /// </summary>
-public sealed class EventBusBuilder
+public sealed class SyncEventBusBuilder
 {
     private IEventQueue? _eventQueue;
     private IEventDispatcher? _eventDispatcher;
     private EventBusConfiguration? _configuration;
 
-    private EventBusBuilder() { }
+    private SyncEventBusBuilder() { }
 
     /// <summary>
-    /// Creates a new <see cref="EventBus"/> instance with optional configuration.
+    /// Creates a new <see cref="SyncEventBus"/> instance with optional configuration.
     /// </summary>
     /// <param name="configure">An optional configuration action for the builder.</param>
-    /// <returns>A configured <see cref="EventBus"/> instance.</returns>
-    public static EventBus Create(Action<EventBusBuilder>? configure = null)
+    /// <returns>A configured <see cref="SyncEventBus"/> instance.</returns>
+    public static SyncEventBus Create(Action<SyncEventBusBuilder>? configure = null)
     {
-        var builder = new EventBusBuilder();
-        builder.WithEventQueue(new DefaultEventQueue());
-        builder.WithEventDispatcher(new DefaultEventDispatcher());
+        var builder = new SyncEventBusBuilder();
+        builder.WithEventQueue(new DefaultSyncEventQueue());
+        builder.WithEventDispatcher(new DefaultSyncEventDispatcher());
         builder.WithConfiguration(EventBusConfigurationBuilder.Create());
 
         configure?.Invoke(builder);
 
-        return new EventBus(builder._eventQueue!, builder._eventDispatcher!, builder._configuration!);
+        return new SyncEventBus(builder._eventQueue!, builder._eventDispatcher!, builder._configuration!);
     }
 
     /// <summary>
-    /// Specifies the event queue to use in the <see cref="EventBus"/>.
+    /// Specifies the event queue to use in the <see cref="SyncEventBus"/>.
     /// </summary>
     /// <param name="eventQueue">The event queue implementation.</param>
-    /// <returns>The current <see cref="EventBusBuilder"/> for chaining.</returns>
+    /// <returns>The current <see cref="SyncEventBusBuilder"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="eventQueue"/> is <c>null</c>.</exception>
-    public EventBusBuilder WithEventQueue(IEventQueue eventQueue)
+    public SyncEventBusBuilder WithEventQueue(IEventQueue eventQueue)
     {
         ArgumentNullException.ThrowIfNull(eventQueue);
         _eventQueue = eventQueue;
@@ -46,12 +46,12 @@ public sealed class EventBusBuilder
     }
 
     /// <summary>
-    /// Specifies the event dispatcher to use in the <see cref="EventBus"/>.
+    /// Specifies the event dispatcher to use in the <see cref="SyncEventBus"/>.
     /// </summary>
     /// <param name="eventDispatcher">The event dispatcher implementation.</param>
-    /// <returns>The current <see cref="EventBusBuilder"/> for chaining.</returns>
+    /// <returns>The current <see cref="SyncEventBusBuilder"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="eventDispatcher"/> is <c>null</c>.</exception>
-    public EventBusBuilder WithEventDispatcher(IEventDispatcher eventDispatcher)
+    public SyncEventBusBuilder WithEventDispatcher(IEventDispatcher eventDispatcher)
     {
         ArgumentNullException.ThrowIfNull(eventDispatcher);
         _eventDispatcher = eventDispatcher;
@@ -59,12 +59,12 @@ public sealed class EventBusBuilder
     }
 
     /// <summary>
-    /// Sets the <see cref="EventBusConfiguration"/> to use in the <see cref="EventBus"/>.
+    /// Sets the <see cref="EventBusConfiguration"/> to use in the <see cref="SyncEventBus"/>.
     /// </summary>
     /// <param name="builder">The event bus configuration instance.</param>
-    /// <returns>The current <see cref="EventBusBuilder"/> for chaining.</returns>
+    /// <returns>The current <see cref="SyncEventBusBuilder"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
-    public EventBusBuilder WithConfiguration(Action<EventBusConfigurationBuilder> builder)
+    public SyncEventBusBuilder WithConfiguration(Action<EventBusConfigurationBuilder> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
         _configuration = EventBusConfigurationBuilder.Create(builder);
@@ -72,12 +72,12 @@ public sealed class EventBusBuilder
     }
 
     /// <summary>
-    /// Sets the <see cref="EventBusConfiguration"/> to use in the <see cref="EventBus"/>.
+    /// Sets the <see cref="EventBusConfiguration"/> to use in the <see cref="SyncEventBus"/>.
     /// </summary>
     /// <param name="configuration">The event bus configuration instance.</param>
-    /// <returns>The current <see cref="EventBusBuilder"/> for chaining.</returns>
+    /// <returns>The current <see cref="SyncEventBusBuilder"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="configuration"/> is <c>null</c>.</exception>
-    public EventBusBuilder WithConfiguration(EventBusConfiguration configuration)
+    public SyncEventBusBuilder WithConfiguration(EventBusConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
         _configuration = configuration;

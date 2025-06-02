@@ -16,7 +16,7 @@ internal sealed class Program
         });
 
         // custom configuration
-        var eventBus = EventBusBuilder.Create(options =>
+        var eventBus = SyncEventBusBuilder.Create(options =>
         {
             // with a manual builder
             options.WithConfiguration(configurationBuilder);
@@ -84,7 +84,7 @@ internal sealed class Program
     }
 
     // Simulates some kind of Event Publish
-    private static void PublishRandomOrderEvent(EventBus eventBus)
+    private static void PublishRandomOrderEvent(SyncEventBus eventBus)
     {
         var random = Random.Shared;
 

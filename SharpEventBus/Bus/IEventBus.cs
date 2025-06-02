@@ -20,7 +20,7 @@ public interface IEventBus
     /// </summary>
     /// <typeparam name="T">The type of event to subscribe to.</typeparam>
     /// <param name="subscriber">The subscriber instance that will handle the event.</param>
-    void Subscribe<T>(ISubscriber<T> subscriber) where T : class, IEvent;
+    void Subscribe<T>(IEventSubscriber<T> subscriber) where T : class, IEvent;
 
     /// <summary>
     /// Processes all queued events.

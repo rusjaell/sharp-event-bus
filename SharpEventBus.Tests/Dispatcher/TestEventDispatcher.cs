@@ -8,10 +8,10 @@ internal sealed class TestEventDispatcher : IEventDispatcher
 {
     public int DispatchCallCount { get; private set; }
     public IEvent? LastEvent { get; private set; }
-    public ISubscriber[]? LastSubscribers { get; private set; }
+    public IEventSubscriber[]? LastSubscribers { get; private set; }
     public List<IEvent> DispatchedEvents { get; } = [];
 
-    public void Dispatch(IEvent e, in Span<ISubscriber> subscribers)
+    public void Dispatch(IEvent e, in Span<IEventSubscriber> subscribers)
     {
         DispatchCallCount++;
         LastEvent = e;

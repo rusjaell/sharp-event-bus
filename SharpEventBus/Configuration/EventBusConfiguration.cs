@@ -3,7 +3,7 @@
 namespace SharpEventBus.Configuration;
 
 /// <summary>
-/// Configuration for <see cref="EventBus"/> instances.
+/// Configuration for <see cref="SyncEventBus"/> instances.
 /// </summary>
 public sealed class EventBusConfiguration
 {

@@ -5,12 +5,12 @@ namespace SharpEventBus.Dispatcher;
 
 /// <summary>
 /// Default implementation of <see cref="IEventDispatcher"/> that synchronously
-/// dispatches events to subscribers by invoking their <see cref="ISubscriber.OnEvent"/> method.
+/// dispatches events to subscribers by invoking their <see cref="IEventSubscriber.OnEvent"/> method.
 /// </summary>
-internal sealed class DefaultEventDispatcher : IEventDispatcher
+internal sealed class DefaultSyncEventDispatcher : IEventDispatcher
 {
     /// <inheritdoc />
-    public void Dispatch(IEvent e, in Span<ISubscriber> subscribers)
+    public void Dispatch(IEvent e, in Span<IEventSubscriber> subscribers)
     {
         ArgumentNullException.ThrowIfNull(e);
 

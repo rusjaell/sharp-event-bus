@@ -4,7 +4,7 @@ using SharpEventBus.Subscriber;
 namespace SharpEventBus.Example.Subscribers;
 
 // Subscriber that handles OrderPlacedEvent events
-public sealed class OrderPlacedSubscriber : SubscriberBase<OrderPlacedEvent>
+public sealed class OrderPlacedSubscriber : SyncEventSubscriberBase<OrderPlacedEvent>
 {
     // Called when an OrderPlacedEvent is published
     public override void OnEvent(OrderPlacedEvent e)
