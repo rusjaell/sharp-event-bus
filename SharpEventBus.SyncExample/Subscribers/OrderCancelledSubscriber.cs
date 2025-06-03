@@ -1,10 +1,10 @@
-﻿using SharpEventBus.Example.Events;
-using SharpEventBus.Subscriber;
+﻿using SharpEventBus.Subscriber;
+using SharpEventBus.SyncExample.Events;
 
-namespace SharpEventBus.Example.Subscribers;
+namespace SharpEventBus.SyncExample.Subscribers;
 
 // Subscriber that handles OrderCancelledEvent events
-public sealed class OrderCancelledSubscriber : SubscriberBase<OrderCancelledEvent>
+public sealed class OrderCancelledSubscriber : SyncEventSubscriberBase<OrderCancelledEvent>
 {
     // Called when an OrderCancelledEvent is published
     public override void OnEvent(OrderCancelledEvent e)

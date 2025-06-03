@@ -13,5 +13,5 @@ public interface IEventDispatcher
     /// </summary>
     /// <param name="e">The event to dispatch.</param>
     /// <param name="subscribers">The subscribers to receive the event.</param>
-    void Dispatch(IEvent e, in Span<ISubscriber> subscribers);
+    void Dispatch(IEvent e, in Span<IEventSubscriber> subscribers);
 }

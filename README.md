@@ -12,7 +12,7 @@ SharpEventBus provides a synchronous event bus that allows publishing and subscr
 - ❌ Event Filtering  
 - ❌ Event Priorities  
 - ❌ Event Scheduler  
-- ❌ Asynchronous Publishing & Consumption Support  
+- ✔️ Asynchronous Publishing & Consumption Support  
 
 ## Usage Example
 

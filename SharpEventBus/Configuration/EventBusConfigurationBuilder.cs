@@ -6,6 +6,7 @@
 public sealed class EventBusConfigurationBuilder
 {
     private bool _debugLogging = false;
+    private int _maxConsumerConcurrency = 16;
 
     private EventBusConfigurationBuilder() { }
 
@@ -19,9 +20,8 @@ public sealed class EventBusConfigurationBuilder
         var configuration = new EventBusConfigurationBuilder();
         builder?.Invoke(configuration);
 
-        return new EventBusConfiguration(configuration._debugLogging);
+        return new EventBusConfiguration(configuration._debugLogging, configuration._maxConsumerConcurrency);
     }
-
 
     /// <summary>
     /// Enables debug logging in for the event bus.
@@ -29,6 +29,12 @@ public sealed class EventBusConfigurationBuilder
     public EventBusConfigurationBuilder WithDebugLogging()
     {
         _debugLogging = true;
+        return this;
+    }
+
+    public EventBusConfigurationBuilder WithMaxConsumerConcurrency(int max)
+    {
+        _maxConsumerConcurrency = max;
         return this;
     }
 }

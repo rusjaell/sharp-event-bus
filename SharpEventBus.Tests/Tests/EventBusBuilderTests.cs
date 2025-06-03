@@ -8,24 +8,24 @@ public static class EventBusBuilderTests
     [Fact]
     public static void EventBusBuilder_Create_WithEventQueue_ShouldThrowArgumentNullException()
     {
-        var exception = Assert.Throws<ArgumentNullException>(() => EventBusBuilder.Create(options => options.WithEventQueue(null!)));
+        var exception = Assert.Throws<ArgumentNullException>(() => SyncEventBusBuilder.Create(options => options.WithEventQueueFactory(null!)));
 
-        Assert.Equal("eventQueue", exception.ParamName);
+        Assert.Equal("queueFactory", exception.ParamName);
     }
 
     [Fact]
     public static void EventBusBuilder_Create_WithDispatcher_ShouldThrowArgumentNullException()
     {
-        var exception = Assert.Throws<ArgumentNullException>(() => EventBusBuilder.Create(options => options.WithEventDispatcher(null!)));
+        var exception = Assert.Throws<ArgumentNullException>(() => SyncEventBusBuilder.Create(options => options.WithEventDispatcherFactory(null!)));
 
-        Assert.Equal("eventDispatcher", exception.ParamName);
+        Assert.Equal("dispatcherFactory", exception.ParamName);
     }
 
     [Fact]
     public static void PublishTestEvent_NullEvent_ShouldThrowArgumentNullException()
     {
-        var bus = EventBusBuilder.Create();
+        var bus = SyncEventBusBuilder.Create();
 
-        Assert.Throws<ArgumentNullException>(() => bus.PublishEvent<TestEvent>(null!));
+        Assert.Throws<ArgumentNullException>(() => bus.Publish<TestEvent>(null!));
     }
 }

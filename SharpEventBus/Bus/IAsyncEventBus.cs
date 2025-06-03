@@ -4,9 +4,9 @@ using SharpEventBus.Subscriber;
 namespace SharpEventBus.Bus;
 
 /// <summary>
-/// Defines a framework for an event bus that supports publishing events, subscribing to events, and consumption of queued events.
+/// Defines a framework for an async event bus that supports publishing events, subscribing to events.
 /// </summary>
-public interface IEventBus
+public interface IAsyncEventBus
 {
     /// <summary>
     /// Publishes an event to the bus.
@@ -20,10 +20,5 @@ public interface IEventBus
     /// </summary>
     /// <typeparam name="T">The type of event to subscribe to.</typeparam>
     /// <param name="subscriber">The subscriber instance that will handle the event.</param>
-    void AddSubscriber<T>(IEventSubscriber<T> subscriber) where T : class, IEvent;
-
-    /// <summary>
-    /// Processes all queued events.
-    /// </summary>
-    void ConsumeEvents();
+    void AddSubscriber<T>(IAsyncEventSubscriber<T> subscriber) where T : class, IEvent;
 }

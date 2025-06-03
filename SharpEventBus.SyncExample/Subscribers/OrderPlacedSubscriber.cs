@@ -1,10 +1,10 @@
-﻿using SharpEventBus.Example.Events;
-using SharpEventBus.Subscriber;
+﻿using SharpEventBus.Subscriber;
+using SharpEventBus.SyncExample.Events;
 
-namespace SharpEventBus.Example.Subscribers;
+namespace SharpEventBus.SyncExample.Subscribers;
 
 // Subscriber that handles OrderPlacedEvent events
-public sealed class OrderPlacedSubscriber : SubscriberBase<OrderPlacedEvent>
+public sealed class OrderPlacedSubscriber : SyncEventSubscriberBase<OrderPlacedEvent>
 {
     // Called when an OrderPlacedEvent is published
     public override void OnEvent(OrderPlacedEvent e)

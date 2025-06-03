@@ -14,16 +14,16 @@ public static class EventBusTests
     [Fact]
     public static void Constructor_ShouldThrowArgumentNullException()
     {
-        var dispatcher = new DefaultEventDispatcher();
-        var queue = new DefaultEventQueue();
+        var queue = () => new DefaultEventQueue();
+        var dispatcher = () => new DefaultSyncEventDispatcher();
         var config = EventBusConfigurationBuilder.Create();
 
-        var queueException = Assert.Throws<ArgumentNullException>(() => new EventBus(null, dispatcher, config));
-        var dispatcherException = Assert.Throws<ArgumentNullException>(() => new EventBus(queue, null, config));
-        var configurationException = Assert.Throws<ArgumentNullException>(() => new EventBus(queue, dispatcher, null));
+        var queueException = Assert.Throws<ArgumentNullException>(() => new SyncEventBus(null, dispatcher, config));
+        var dispatcherException = Assert.Throws<ArgumentNullException>(() => new SyncEventBus(queue, null, config));
+        var configurationException = Assert.Throws<ArgumentNullException>(() => new SyncEventBus(queue, dispatcher, null));
 
-        Assert.Equal("eventQueue", queueException.ParamName);
-        Assert.Equal("eventDispatcher", dispatcherException.ParamName);
+        Assert.Equal("queueFactory", queueException.ParamName);
+        Assert.Equal("dispatcherFactory", dispatcherException.ParamName);
         Assert.Equal("configuration", configurationException.ParamName);
     }
 
@@ -33,10 +33,10 @@ public static class EventBusTests
         var testQueue = new TestEventQueue();
         var testDispatcher = new TestEventDispatcher();
 
-        var bus = EventBusBuilder.Create(options =>
+        var bus = SyncEventBusBuilder.Create(options =>
         {
-            options.WithEventQueue(testQueue);
-            options.WithEventDispatcher(testDispatcher);
+            options.WithEventQueueFactory(() => testQueue);
+            options.WithEventDispatcherFactory(() => testDispatcher);
         });
 
         var event1 = new TestEvent("event1");
@@ -45,7 +45,7 @@ public static class EventBusTests
         testQueue.Enqueue(event1);
         testQueue.Enqueue(event2);
 
-        bus.Subscribe(new TestSubscriber());
+        bus.AddSubscriber(new TestSubscriber());
 
         bus.ConsumeEvents();
 
@@ -60,16 +60,16 @@ public static class EventBusTests
         var testQueue = new TestEventQueue();
         var testDispatcher = new TestEventDispatcher();
 
-        var bus = EventBusBuilder.Create(options =>
+        var bus = SyncEventBusBuilder.Create(options =>
         {
-            options.WithEventQueue(testQueue);
-            options.WithEventDispatcher(testDispatcher);
+            options.WithEventQueueFactory(() => testQueue);
+            options.WithEventDispatcherFactory(() => testDispatcher);
         });
 
         var testEvent = new TestEvent("hello");
         var subscriber = new TestSubscriber();
 
-        bus.Subscribe(subscriber);
+        bus.AddSubscriber(subscriber);
         testQueue.Enqueue(testEvent);
 
         bus.ConsumeEvents();
@@ -84,15 +84,19 @@ public static class EventBusTests
         var testQueue = new TestEventQueue();
         var testDispatcher = new TestEventDispatcher();
 
-        var bus = EventBusBuilder.Create(options =>
+        var sub = new TestSubscriber();
+
+        var bus = SyncEventBusBuilder.Create(options =>
         {
-            options.WithEventQueue(testQueue);
-            options.WithEventDispatcher(testDispatcher);
+            options.WithEventQueueFactory(() => testQueue);
+            options.WithEventDispatcherFactory(() => testDispatcher);
         });
+
+        bus.AddSubscriber(sub);
 
         var testEvent = new TestEvent("test");
 
-        bus.PublishEvent(testEvent);
+        bus.Publish(testEvent);
 
         Assert.Single(testQueue.EnqueuedEvents);
         Assert.Equal(testEvent, testQueue.EnqueuedEvents[0]);
@@ -101,11 +105,11 @@ public static class EventBusTests
     [Fact]
     public static void Subscribe_ShouldRegisterSubscriber()
     {
-        var bus = EventBusBuilder.Create();
+        var bus = SyncEventBusBuilder.Create();
         var subscriber = new TestSubscriber();
 
-        bus.Subscribe(subscriber);
-        bus.PublishEvent(new TestEvent("test"));
+        bus.AddSubscriber(subscriber);
+        bus.Publish(new TestEvent("test"));
         bus.ConsumeEvents();
 
         Assert.True(subscriber.Received);
@@ -117,16 +121,16 @@ public static class EventBusTests
         var testQueue = new TestEventQueue();
         var testDispatcher = new TestEventDispatcher();
 
-        var bus = EventBusBuilder.Create(options =>
+        var bus = SyncEventBusBuilder.Create(options =>
         {
-            options.WithEventQueue(testQueue);
-            options.WithEventDispatcher(testDispatcher);
+            options.WithEventQueueFactory(() => testQueue);
+            options.WithEventDispatcherFactory(() => testDispatcher);
         });
 
         var testEvent = new TestEvent("test");
 
         testQueue.Enqueue(testEvent);
-        bus.Subscribe(new TestSubscriber());
+        bus.AddSubscriber(new TestSubscriber());
         bus.ConsumeEvents();
 
         Assert.Equal(1, testDispatcher.DispatchCallCount);
