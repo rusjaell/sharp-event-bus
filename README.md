@@ -82,6 +82,7 @@ public sealed class OrderPlacedSubscriber : SubscriberBase<OrderPlacedEvent>
         Console.WriteLine($"Order placed: {e.OrderId} at {e.Timestamp}");
     }
 }
+```
 
 ## Asyncronous Example
 
