@@ -11,19 +11,19 @@ SharpEventBus provides thread-safe asynchronous and synchronous event bus implem
 - ✔️ Event Consumption
 - ✔️ Asynchronous & Syncronous Event Consuming
 
-🔄 Async mode automatically consumes events in the background.
-⚙️ Sync mode requires manual consumption via ConsumeEvents();
+## Notes:
+- 🔄 Async mode automatically consumes events in the background.
+- ⚙️ Sync mode requires manual consumption via ConsumeEvents();
 
 ## Planned Features
 - ❌ Event Triggers
 - ❌ Event Hooks Support  
-- ❌ Event Chaining Support  
+- ❌ Event Chaining Support
 - ❌ Event Filtering 
 - ❌ Event Priorities
 - ❌ Event Scheduler
 - ❌ Better Factory/Builder Support  
 - ❌ User-Implemented Event Consumer Support 
-
 
 ## Syncronous Example
 
@@ -57,7 +57,7 @@ var eventBus = SyncEventBusBuilder.Create();
 // Create a custom EventBus with options
 var eventBus = SyncEventBusBuilder.Create(options =>
 {
-    // Add custom implementations, or dont and use for default
+    // Add custom implementations, or dont for default
     options.WithEventQueueFactory(() => new CustomEventQueue());
     options.WithEventDispatcherFactory(() => new CustomEventDispatcher());
 });
@@ -117,7 +117,7 @@ var eventBus = SyncEventBusBuilder.Create();
 // Create a custom EventBus with options
 var eventBus = SyncEventBusBuilder.Create(options =>
 {
-    // Add custom implementations, or dont and use for default
+    // Add custom implementations, or dont for default
     options.WithEventQueueFactory(() => new CustomEventQueue());
     options.WithEventDispatcherFactory(() => new CustomEventDispatcher());
 });
