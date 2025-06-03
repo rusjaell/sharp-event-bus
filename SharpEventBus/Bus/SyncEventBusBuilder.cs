@@ -5,7 +5,7 @@ using SharpEventBus.Queue;
 namespace SharpEventBus.Bus;
 
 /// <summary>
-/// Builder for configuring and creating instances of <see cref="SyncEventBus"/>.
+/// Builder class for configuring and creating instances of <see cref="SyncEventBus"/>.
 /// </summary>
 public sealed class SyncEventBusBuilder
 {
@@ -18,7 +18,7 @@ public sealed class SyncEventBusBuilder
     /// <summary>
     /// Creates a new <see cref="SyncEventBus"/> instance with optional configuration.
     /// </summary>
-    /// <param name="configure">An optional configuration action for the builder.</param>
+    /// <param name="configure">An optional action to configure the builder.</param>
     /// <returns>A configured <see cref="SyncEventBus"/> instance.</returns>
     public static SyncEventBus Create(Action<SyncEventBusBuilder>? configure = null)
     {
@@ -33,9 +33,9 @@ public sealed class SyncEventBusBuilder
     }
 
     /// <summary>
-    /// Specifies the event queue to use in the <see cref="SyncEventBus"/>.
+    /// Specifies the factory method for the event queue implementation to be used.
     /// </summary>
-    /// <param name="factory">The event queue implementation.</param>
+    /// <param name="factory">The factory that creates an <see cref="IEventQueue"/> instance.</param>
     /// <returns>The current <see cref="SyncEventBusBuilder"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="factory"/> is <c>null</c>.</exception>
     public SyncEventBusBuilder WithEventQueueFactory(Func<IEventQueue> factory)
@@ -46,9 +46,9 @@ public sealed class SyncEventBusBuilder
     }
 
     /// <summary>
-    /// Specifies the event dispatcher to use in the <see cref="SyncEventBus"/>.
+    /// Specifies the factory method for the event dispatcher implementation to be used.
     /// </summary>
-    /// <param name="factory">The event dispatcher implementation.</param>
+    /// <param name="factory">The factory that creates an <see cref="IEventDispatcher"/> instance.</param>
     /// <returns>The current <see cref="SyncEventBusBuilder"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="factory"/> is <c>null</c>.</exception>
     public SyncEventBusBuilder WithEventDispatcherFactory(Func<IEventDispatcher> factory)
@@ -59,9 +59,9 @@ public sealed class SyncEventBusBuilder
     }
 
     /// <summary>
-    /// Sets the <see cref="EventBusConfiguration"/> to use in the <see cref="SyncEventBus"/>.
+    /// Configures the event bus using an action on <see cref="EventBusConfigurationBuilder"/>.
     /// </summary>
-    /// <param name="builder">The event bus configuration instance.</param>
+    /// <param name="builder">An action to configure the <see cref="EventBusConfigurationBuilder"/>.</param>
     /// <returns>The current <see cref="SyncEventBusBuilder"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is <c>null</c>.</exception>
     public SyncEventBusBuilder WithConfiguration(Action<EventBusConfigurationBuilder> builder)
@@ -72,9 +72,9 @@ public sealed class SyncEventBusBuilder
     }
 
     /// <summary>
-    /// Sets the <see cref="EventBusConfiguration"/> to use in the <see cref="SyncEventBus"/>.
+    /// Specifies the <see cref="EventBusConfiguration"/> instance to use.
     /// </summary>
-    /// <param name="configuration">The event bus configuration instance.</param>
+    /// <param name="configuration">The <see cref="EventBusConfiguration"/> instance.</param>
     /// <returns>The current <see cref="SyncEventBusBuilder"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="configuration"/> is <c>null</c>.</exception>
     public SyncEventBusBuilder WithConfiguration(EventBusConfiguration configuration)
