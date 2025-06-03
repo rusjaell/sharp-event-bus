@@ -83,7 +83,7 @@ public sealed class OrderPlacedSubscriber : SubscriberBase<OrderPlacedEvent>
     }
 }
 
-## Asyncronous Example
+## Asynchronous Example
 
 ```csharp
 using SharpEventBus;

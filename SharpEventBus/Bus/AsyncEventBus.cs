@@ -8,7 +8,7 @@ using SharpEventBus.Subscriber;
 namespace SharpEventBus.Bus;
 
 /// <summary>
-/// Thread-Safe Asyncronous implementation of the <see cref="IAsyncEventBus"/> interface.
+/// Thread-Safe Asynchronous implementation of the <see cref="IAsyncEventBus"/> interface.
 /// Manages event publishing, subscriber registration, and event consumption using internal consumers.
 /// </summary>
 public sealed class AsyncEventBus : IAsyncEventBus
