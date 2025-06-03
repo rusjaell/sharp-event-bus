@@ -31,13 +31,13 @@ internal sealed class Program
         //var eventBus = EventBusBuilder.Create();
 
         // Create a custom-implemented EventBus
-        //var eventBus = EventBusBuilder.Create(options =>
+        //var eventBus = SyncEventBusBuilder.Create(options =>
         //{
         //    // With a custom event queue
-        //    options.WithEventQueue(new CustomEventQueue());
-        //
+        //    c
+
         //    // Or a custom event dispatcher
-        //    options.WithEventDispatcher(new CustomEventDispatcher());
+        //    options.WithEventDispatcherFactory(() => new CustomEventDispatcher());
         //});
 
         // Creates a Subscriber for the OrderPlacedEvent events
@@ -68,10 +68,6 @@ internal sealed class Program
 
                 // Processes all queued events synchronously
                 eventBus.ConsumeEvents();
-
-                // Alternative is to manually process events
-                //for(var i = 0; i < 2; i++)
-                //    eventBus.ConsumeOneEvent();
 
                 await Task.Delay(Random.Shared.Next(500, 1500), cts.Token);
             }

@@ -2,19 +2,30 @@
 A simple, lightweight, in-memory event bus library for modern .NET applications.
 
 ## Overview
-SharpEventBus provides a synchronous event bus that allows publishing and subscribing to events within your application. It supports event queueing and dispatching synchronously.
+SharpEventBus provides thread-safe asynchronous and synchronous event bus implementations, allowing you to easily publish and subscribe to events within your domain application.
+
+## Features
+- ✔️ Configurable Settings
+- ✔️ Event Publishing
+- ✔️ Event Subscribing
+- ✔️ Event Consumption
+- ✔️ Asynchronous & Syncronous Event Consuming
+
+🔄 Async mode automatically consumes events in the background.
+⚙️ Sync mode requires manual consumption via ConsumeEvents();
 
 ## Planned Features
-- ✔️ Configurable Settings  
-- ❌ Event Triggers  
+- ❌ Event Triggers
 - ❌ Event Hooks Support  
 - ❌ Event Chaining Support  
-- ❌ Event Filtering  
-- ❌ Event Priorities  
-- ❌ Event Scheduler  
-- ✔️ Asynchronous Publishing & Consumption Support  
+- ❌ Event Filtering 
+- ❌ Event Priorities
+- ❌ Event Scheduler
+- ❌ Better Factory/Builder Support  
+- ❌ User-Implemented Event Consumer Support 
 
-## Usage Example
+
+## Syncronous Example
 
 ```csharp
 using SharpEventBus;
@@ -22,16 +33,16 @@ using SharpEventBus.Events;
 using SharpEventBus.Subscribers;
 
 // Manual Custom Configuration
-var configurationBuilder = EventBusConfigurationBuilder.Create(builder =>
+var configuration = EventBusConfigurationBuilder.Create(builder =>
 {
     builder.WithDebugLogging();
 });
 
 // Custom configuration
-var eventBus = EventBusBuilder.Create(options =>
+var eventBus = SyncEventBusBuilder.Create(options =>
 {
     // With a manual builder
-    options.WithConfiguration(configurationBuilder);
+    options.WithConfiguration(configuration);
 
     // With a auto builder
     options.WithConfiguration(builder =>
@@ -40,39 +51,95 @@ var eventBus = EventBusBuilder.Create(options =>
     });
 });
 
-// Create a default EventBus instance
-var eventBus = EventBusBuilder.Create();
+// Create a default EventBus instance with all internal defaults
+var eventBus = SyncEventBusBuilder.Create();
 
 // Create a custom EventBus with options
-var customEventBus = EventBusBuilder.Create(options =>
+var eventBus = SyncEventBusBuilder.Create(options =>
 {
-    // Use a custom event queue implementation
-    options.WithEventQueue(new CustomEventQueue());
-
-    // Or use a custom event dispatcher
-    options.WithEventDispatcher(new CustomEventDispatcher());
+    // Add custom implementations, or dont and use for default
+    options.WithEventQueueFactory(() => new CustomEventQueue());
+    options.WithEventDispatcherFactory(() => new CustomEventDispatcher());
 });
 
 // Subscribe to events
-eventBus.Subscribe(new OrderPlacedSubscriber());
+eventBus.AddSubscriber(new OrderPlacedSubscriber());
 
 // Publish an event to subscribers
-eventBus.PublishEvent(new OrderPlacedEvent("Order123", DateTime.UtcNow));
+eventBus.Publish(new OrderPlacedEvent("Order123", DateTime.UtcNow));
 
-// Consume all pending events synchronously
+// Manually have to call ConsumeEvents to consume events
 eventBus.ConsumeEvents();
-
-// Consume a single event manually
-eventBus.ConsumeOneEvent();
 
 // Event model definition
 public record OrderPlacedEvent(string OrderId, DateTime Timestamp) : IEvent;
 
 // Subscriber implementation
-public class OrderPlacedSubscriber : SubscriberBase<OrderPlacedEvent>
+public sealed class OrderPlacedSubscriber : SubscriberBase<OrderPlacedEvent>
 {
     public override void OnEvent(OrderPlacedEvent e)
     {
+        Console.WriteLine($"Order placed: {e.OrderId} at {e.Timestamp}");
+    }
+}
+
+## Asyncronous Example
+
+```csharp
+using SharpEventBus;
+using SharpEventBus.Events;
+using SharpEventBus.Subscribers;
+
+// Manual Custom Configuration
+var configuration = EventBusConfigurationBuilder.Create(builder =>
+{
+    builder.WithDebugLogging();
+    builder.WithMaxConsumerConcurrency(16);
+});
+
+// Custom configuration
+var asyncEventBus = AsyncEventBusBuilder.Create(builder =>
+{
+    // With a manual builder
+    options.WithConfiguration(configuration);
+
+    // With a auto builder
+    options.WithConfiguration(builder =>
+    {
+        builder.WithDebugLogging();
+        builder.WithMaxConsumerConcurrency(16);
+    });
+});
+
+// Create a default EventBus instance with all internal defaults
+var eventBus = SyncEventBusBuilder.Create();
+
+// Create a custom EventBus with options
+var eventBus = SyncEventBusBuilder.Create(options =>
+{
+    // Add custom implementations, or dont and use for default
+    options.WithEventQueueFactory(() => new CustomEventQueue());
+    options.WithEventDispatcherFactory(() => new CustomEventDispatcher());
+});
+
+// Subscribe to events
+// Note - Will automatically start to Consume events related to subscriber once the subscriber is added
+asyncEventBus.AddSubscriber(new OrderPlacedAsyncSubscriber());
+
+// Publish an event to subscribers
+asyncEventBus.Publish(new OrderPlacedEvent("Order123", DateTime.UtcNow));
+
+// Event model definition
+public record OrderPlacedEvent(string OrderId, DateTime Timestamp) : IEvent;
+
+// Subscriber implementation
+public sealed class OrderPlacedAsyncSubscriber : AsyncEventSubscriberBase<OrderPlacedEvent>
+{
+    public override async Task OnEventAsync(OrderPlacedEvent e)
+    {
+        // Simulated IO Work
+        await Task.Delay(Random.Shared.Next(0, 50));
+
         Console.WriteLine($"Order placed: {e.OrderId} at {e.Timestamp}");
     }
 }
