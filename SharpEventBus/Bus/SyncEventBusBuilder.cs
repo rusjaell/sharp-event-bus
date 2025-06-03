@@ -23,7 +23,7 @@ public sealed class SyncEventBusBuilder
     public static SyncEventBus Create(Action<SyncEventBusBuilder>? configure = null)
     {
         var builder = new SyncEventBusBuilder();
-        builder.WithEventQueueFactory(() => new DefaultSyncEventQueue());
+        builder.WithEventQueueFactory(() => new DefaultEventQueue());
         builder.WithEventDispatcherFactory(() => new DefaultSyncEventDispatcher());
         builder.WithConfiguration(EventBusConfigurationBuilder.Create());
 
@@ -35,26 +35,26 @@ public sealed class SyncEventBusBuilder
     /// <summary>
     /// Specifies the factory method for the event queue implementation to be used.
     /// </summary>
-    /// <param name="factory">The factory that creates an <see cref="IEventQueue"/> instance.</param>
+    /// <param name="queueFactory">The factory that creates an <see cref="IEventQueue"/> instance.</param>
     /// <returns>The current <see cref="SyncEventBusBuilder"/> for chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="factory"/> is <c>null</c>.</exception>
-    public SyncEventBusBuilder WithEventQueueFactory(Func<IEventQueue> factory)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="queueFactory"/> is <c>null</c>.</exception>
+    public SyncEventBusBuilder WithEventQueueFactory(Func<IEventQueue> queueFactory)
     {
-        ArgumentNullException.ThrowIfNull(factory);
-        _eventQueueFactory = factory;
+        ArgumentNullException.ThrowIfNull(queueFactory);
+        _eventQueueFactory = queueFactory;
         return this;
     }
 
     /// <summary>
     /// Specifies the factory method for the event dispatcher implementation to be used.
     /// </summary>
-    /// <param name="factory">The factory that creates an <see cref="IEventDispatcher"/> instance.</param>
+    /// <param name="dispatcherFactory">The factory that creates an <see cref="IEventDispatcher"/> instance.</param>
     /// <returns>The current <see cref="SyncEventBusBuilder"/> for chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="factory"/> is <c>null</c>.</exception>
-    public SyncEventBusBuilder WithEventDispatcherFactory(Func<IEventDispatcher> factory)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="dispatcherFactory"/> is <c>null</c>.</exception>
+    public SyncEventBusBuilder WithEventDispatcherFactory(Func<IEventDispatcher> dispatcherFactory)
     {
-        ArgumentNullException.ThrowIfNull(factory);
-        _eventDispatcherFactory = factory;
+        ArgumentNullException.ThrowIfNull(dispatcherFactory);
+        _eventDispatcherFactory = dispatcherFactory;
         return this;
     }
 

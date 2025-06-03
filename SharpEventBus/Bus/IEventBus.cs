@@ -4,7 +4,7 @@ using SharpEventBus.Subscriber;
 namespace SharpEventBus.Bus;
 
 /// <summary>
-/// Defines a framework for an event bus that supports publishing events, subscribing to events, and manual consumption of queued events.
+/// Defines a framework for an event bus that supports publishing events, subscribing to events, and consumption of queued events.
 /// </summary>
 public interface IEventBus
 {

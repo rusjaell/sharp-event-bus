@@ -1,20 +1,21 @@
 ﻿using SharpEventBus.Event;
+using System.Collections.Concurrent;
 
 namespace SharpEventBus.Queue;
 
 /// <summary>
-/// Default implementation of <see cref="IEventQueue"/> using a FIFO queue.
+/// Thread-Safe Default implementation of <see cref="IEventQueue"/> using a FIFO queue.
 /// </summary>
-internal sealed class DefaultSyncEventQueue : IEventQueue
+public sealed class DefaultEventQueue : IEventQueue
 {
-    internal DefaultSyncEventQueue()
+    internal DefaultEventQueue()
     {
     }
 
-    private readonly Queue<IEvent> _queue = new Queue<IEvent>();
+    private readonly ConcurrentQueue<IEvent> _queue = new ConcurrentQueue<IEvent>();
 
     /// <inheritdoc />
-    public bool IsEmpty => _queue.Count == 0;
+    public bool IsEmpty => _queue.IsEmpty;
 
     /// <inheritdoc />
     public int Count => _queue.Count;

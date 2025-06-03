@@ -10,7 +10,7 @@ public static class EventBusBuilderTests
     {
         var exception = Assert.Throws<ArgumentNullException>(() => SyncEventBusBuilder.Create(options => options.WithEventQueueFactory(null!)));
 
-        Assert.Equal("eventQueue", exception.ParamName);
+        Assert.Equal("queueFactory", exception.ParamName);
     }
 
     [Fact]
@@ -18,7 +18,7 @@ public static class EventBusBuilderTests
     {
         var exception = Assert.Throws<ArgumentNullException>(() => SyncEventBusBuilder.Create(options => options.WithEventDispatcherFactory(null!)));
 
-        Assert.Equal("eventDispatcher", exception.ParamName);
+        Assert.Equal("dispatcherFactory", exception.ParamName);
     }
 
     [Fact]

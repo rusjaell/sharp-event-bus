@@ -24,7 +24,7 @@ public sealed class AsyncEventBusBuilder
     public static AsyncEventBus Create(Action<AsyncEventBusBuilder>? configure = null)
     {
         var builder = new AsyncEventBusBuilder();
-        builder.WithEventQueueFactory(() => new DefaultAsyncEventQueue());
+        builder.WithEventQueueFactory(() => new DefaultEventQueue());
         builder.WithEventDispatcherFactory(() => new DefaultAsyncEventDispatcher());
         builder.WithConfiguration(EventBusConfigurationBuilder.Create());
 

@@ -2,8 +2,6 @@
 using SharpEventBus.AsyncExample.Subscribers;
 using SharpEventBus.Bus;
 using SharpEventBus.Configuration;
-using SharpEventBus.Dispatcher;
-using SharpEventBus.Queue;
 
 namespace SharpEventBus.AsyncExample;
 

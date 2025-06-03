@@ -14,16 +14,16 @@ public static class EventBusTests
     [Fact]
     public static void Constructor_ShouldThrowArgumentNullException()
     {
+        var queue = () => new DefaultEventQueue();
         var dispatcher = () => new DefaultSyncEventDispatcher();
-        var queue = () => new DefaultSyncEventQueue();
         var config = EventBusConfigurationBuilder.Create();
 
         var queueException = Assert.Throws<ArgumentNullException>(() => new SyncEventBus(null, dispatcher, config));
         var dispatcherException = Assert.Throws<ArgumentNullException>(() => new SyncEventBus(queue, null, config));
         var configurationException = Assert.Throws<ArgumentNullException>(() => new SyncEventBus(queue, dispatcher, null));
 
-        Assert.Equal("eventQueue", queueException.ParamName);
-        Assert.Equal("eventDispatcher", dispatcherException.ParamName);
+        Assert.Equal("queueFactory", queueException.ParamName);
+        Assert.Equal("dispatcherFactory", dispatcherException.ParamName);
         Assert.Equal("configuration", configurationException.ParamName);
     }
 
@@ -84,11 +84,15 @@ public static class EventBusTests
         var testQueue = new TestEventQueue();
         var testDispatcher = new TestEventDispatcher();
 
+        var sub = new TestSubscriber();
+
         var bus = SyncEventBusBuilder.Create(options =>
         {
             options.WithEventQueueFactory(() => testQueue);
             options.WithEventDispatcherFactory(() => testDispatcher);
         });
+
+        bus.AddSubscriber(sub);
 
         var testEvent = new TestEvent("test");
 
