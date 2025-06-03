@@ -11,19 +11,19 @@ SharpEventBus provides thread-safe asynchronous and synchronous event bus implem
 - ✔️ Event Consumption
 - ✔️ Asynchronous & Syncronous Event Consuming
 
-🔄 Async mode automatically consumes events in the background.
-⚙️ Sync mode requires manual consumption via ConsumeEvents();
+### Notes
+- 🔄 Async mode automatically consumes events in the background.
+- ⚙️ Sync mode requires manual consumption via ConsumeEvents();
 
 ## Planned Features
 - ❌ Event Triggers
 - ❌ Event Hooks Support  
-- ❌ Event Chaining Support  
+- ❌ Event Chaining Support
 - ❌ Event Filtering 
 - ❌ Event Priorities
 - ❌ Event Scheduler
 - ❌ Better Factory/Builder Support  
 - ❌ User-Implemented Event Consumer Support 
-
 
 ## Syncronous Example
 
