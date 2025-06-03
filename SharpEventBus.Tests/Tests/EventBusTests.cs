@@ -45,7 +45,7 @@ public static class EventBusTests
         testQueue.Enqueue(event1);
         testQueue.Enqueue(event2);
 
-        bus.Subscribe(new TestSubscriber());
+        bus.AddSubscriber(new TestSubscriber());
 
         bus.ConsumeEvents();
 
@@ -69,7 +69,7 @@ public static class EventBusTests
         var testEvent = new TestEvent("hello");
         var subscriber = new TestSubscriber();
 
-        bus.Subscribe(subscriber);
+        bus.AddSubscriber(subscriber);
         testQueue.Enqueue(testEvent);
 
         bus.ConsumeEvents();
@@ -104,7 +104,7 @@ public static class EventBusTests
         var bus = SyncEventBusBuilder.Create();
         var subscriber = new TestSubscriber();
 
-        bus.Subscribe(subscriber);
+        bus.AddSubscriber(subscriber);
         bus.PublishEvent(new TestEvent("test"));
         bus.ConsumeEvents();
 
@@ -126,7 +126,7 @@ public static class EventBusTests
         var testEvent = new TestEvent("test");
 
         testQueue.Enqueue(testEvent);
-        bus.Subscribe(new TestSubscriber());
+        bus.AddSubscriber(new TestSubscriber());
         bus.ConsumeEvents();
 
         Assert.Equal(1, testDispatcher.DispatchCallCount);

@@ -52,7 +52,7 @@ public sealed class SyncEventBus : IEventBus
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="subscriber"/> is null.</exception>
-    public void Subscribe<T>(IEventSubscriber<T> subscriber) where T : class, IEvent
+    public void AddSubscriber<T>(IEventSubscriber<T> subscriber) where T : class, IEvent
     {
         ArgumentNullException.ThrowIfNull(subscriber);
 

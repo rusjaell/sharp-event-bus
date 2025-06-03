@@ -1,7 +1,7 @@
-﻿using SharpEventBus.Example.Events;
-using SharpEventBus.Subscriber;
+﻿using SharpEventBus.Subscriber;
+using SharpEventBus.SyncExample.Events;
 
-namespace SharpEventBus.Example.Subscribers;
+namespace SharpEventBus.SyncExample.Subscribers;
 
 // Subscriber that handles OrderPlacedEvent events
 public sealed class OrderPlacedSubscriber : SyncEventSubscriberBase<OrderPlacedEvent>
