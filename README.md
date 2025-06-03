@@ -8,8 +8,7 @@ SharpEventBus provides thread-safe asynchronous and synchronous event bus implem
 - ✔️ Configurable Settings
 - ✔️ Event Publishing
 - ✔️ Event Subscribing
-- ✔️ Event Consumption
-- ✔️ Asynchronous & Syncronous Event Consuming
+- ✔️ Event Consumption (Asynchronous & Syncronous)
 
 ### Notes
 - 🔄 Async mode automatically consumes events in the background.
