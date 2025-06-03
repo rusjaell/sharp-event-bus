@@ -7,6 +7,10 @@ namespace SharpEventBus.Queue;
 /// </summary>
 internal sealed class DefaultSyncEventQueue : IEventQueue
 {
+    internal DefaultSyncEventQueue()
+    {
+    }
+
     private readonly Queue<IEvent> _queue = new Queue<IEvent>();
 
     /// <inheritdoc />

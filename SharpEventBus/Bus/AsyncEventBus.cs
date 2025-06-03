@@ -1,155 +1,104 @@
 ﻿using SharpEventBus.Configuration;
+using SharpEventBus.Consumer;
 using SharpEventBus.Dispatcher;
 using SharpEventBus.Event;
-using SharpEventBus.Exceptions;
 using SharpEventBus.Queue;
 using SharpEventBus.Subscriber;
-using System.Runtime.InteropServices;
 
 namespace SharpEventBus.Bus;
 
 public sealed class AsyncEventBus : IAsyncEventBus
 {
-    private readonly Dictionary<Type, List<IAsyncEventSubscriber>> _subscribers = [];
-
-    private readonly IEventQueue _eventQueue;
-    private readonly IAsyncEventDispatcher _eventDispatcher;
+    private readonly Func<IEventQueue> _queueFactory;
+    private readonly Func<IAsyncEventDispatcher> _dispatcherFactory;
+    private readonly Dictionary<Type, IAsyncEventConsumer> _consumers = [];
     private readonly EventBusConfiguration _configuration;
 
-    private readonly SemaphoreSlim _signal = new SemaphoreSlim(0);
-    private CancellationTokenSource? _cts;
-    private Task? _consumerTask;
+    private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+    private readonly List<Task> _consumerTasks = [];
 
-    public AsyncEventBus(IEventQueue? eventQueue, IAsyncEventDispatcher? eventDispatcher, EventBusConfiguration? configuration)
+    internal AsyncEventBus(Func<IEventQueue>? queueFactory, Func<IAsyncEventDispatcher>? dispatcherFactory, EventBusConfiguration? configuration)
     {
-        ArgumentNullException.ThrowIfNull(eventQueue);
-        ArgumentNullException.ThrowIfNull(eventDispatcher);
+        ArgumentNullException.ThrowIfNull(queueFactory);
+        ArgumentNullException.ThrowIfNull(dispatcherFactory);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        _eventQueue = eventQueue;
-        _eventDispatcher = eventDispatcher;
+        _queueFactory = queueFactory;
+        _dispatcherFactory = dispatcherFactory;
         _configuration = configuration;
     }
 
     public void Publish<T>(T e) where T : class, IEvent
     {
-        if (_configuration.DebugLogging)
-            Console.WriteLine($"[EventBus] PublishEvent: {e.GetType().Name}");
-
         ArgumentNullException.ThrowIfNull(e);
-        _eventQueue.Enqueue(e);
 
-        _signal.Release();
+        IAsyncEventConsumer? consumer;
+        lock (_consumers)
+            consumer = _consumers.GetValueOrDefault(typeof(T));
+
+        if (consumer == null)
+        {
+            if (_configuration.DebugLogging)
+                Console.WriteLine($"[EventBus] No consumer found for event type {typeof(T).Name}");
+            return;
+        }
+
+        consumer.Enqueue(e);
     }
 
-    public void AddAsyncSubscriber<T>(IAsyncEventSubscriber<T> subscriber) where T : class, IEvent
+    public void AddSubscriber<T>(IAsyncEventSubscriber<T> subscriber) where T : class, IEvent
     {
         ArgumentNullException.ThrowIfNull(subscriber);
 
+        if (_configuration.DebugLogging)
+            Console.WriteLine($"[EventBus] Adding subscriber {subscriber.GetType().Name} for {typeof(T).Name}");
+
+        var consumer = GetOrCreateConsumer<T>();
+        consumer.AddAsyncSubscriber(subscriber);
+    }
+
+    private IAsyncEventConsumer GetOrCreateConsumer<T>() where T : class, IEvent
+    {
         var type = typeof(T);
 
-        lock (_subscribers)
+        lock (_consumers)
         {
-            ref var list = ref CollectionsMarshal.GetValueRefOrAddDefault(_subscribers, type, out var exists);
-            if (!exists || list == null)
-                list = [];
-
-            list.Add(subscriber);
-
-            if (_configuration.DebugLogging)
-                Console.WriteLine($"[EventBus] Subscribe: {type.Name} now has {list.Count} subscribers");
+            if (_consumers.TryGetValue(type, out var consumer))
+                return consumer;
         }
-    }
 
-    public void StartConsuming()
-    {
-        if (_consumerTask != null)
-            throw new InvalidOperationException("Already started.");
+        var queue = _queueFactory.Invoke();
+        var dispatcher = _dispatcherFactory.Invoke();
 
-        _cts = new CancellationTokenSource();
-        _consumerTask = Task.Run(() => TestConsumeLoopAsync(_cts.Token));
-    }
+        var newConsumer = new DefaultAsyncEventConsumerWorker(dispatcher, queue, _configuration.DebugLogging, _configuration.MaxConsumerConcurrency);
 
-    private async Task TestConsumeLoopAsync(CancellationToken token)
-    {
-        while (!token.IsCancellationRequested)
+        if (_configuration.DebugLogging)
+            Console.WriteLine($"[EventBus] Created consumer for {type.Name}");
+
+        lock (_consumers)
         {
-            try
-            {
-                if (_configuration.DebugLogging)
-                    Console.WriteLine("[EventBus] Waiting for signal...");
+            if (_consumers.TryGetValue(type, out var consumer))
+                return consumer;
 
-                await _signal.WaitAsync(token);
+            _consumers.Add(type, newConsumer);
+            _consumerTasks.Add(newConsumer.RunAsync(_cts.Token));
+        }
+        return newConsumer;
+    }
 
-                if (_configuration.DebugLogging)
-                    Console.WriteLine("[EventBus] Signal received, processing events...");
-            }
-            catch (OperationCanceledException)
-            {
-                if (_configuration.DebugLogging)
-                    Console.WriteLine("[EventBus] ConsumeLoop canceled.");
-                break;
-            }
+    public async Task ShutdownAsync()
+    {
+        _cts.Cancel();
 
-            while (_eventQueue.TryDequeue(out var e))
-            {
-                if (e == null)
-                    EventQueueTryDequeueException.Throw();
-                
-                var type = e.GetType();
-
-                List<IAsyncEventSubscriber>? handlers;
-                lock (_subscribers)
-                {
-                    handlers = _subscribers.GetValueOrDefault(type);
-                }
-
-                if (handlers == null)
-                {
-                    if (_configuration.DebugLogging)
-                        Console.WriteLine($"[EventBus] DispatchEvent: No subscribers for {type.Name}");
-                    continue;
-                }
-
-                try
-                {
-                    if (_configuration.DebugLogging)
-                        Console.WriteLine($"[EventBus] Dispatching: {type.Name}");
-
-                    await _eventDispatcher.DispatchAsync(e, handlers.AsReadOnly());
-
-                    if (_configuration.DebugLogging)
-                        Console.WriteLine($"[EventBus] Event dispatched: {type.Name}");
-                }
-                catch (Exception ex)
-                {
-                    if (_configuration.DebugLogging)
-                        Console.WriteLine($"[EventBus] Dispatch error: {ex}");
-                }
-            }
-
-            if (_configuration.DebugLogging)
-                Console.WriteLine("[EventBus] Finished processing all queued events.");
+        try
+        {
+            await Task.WhenAll(_consumerTasks);
+        }
+        catch (OperationCanceledException)
+        {
         }
 
         if (_configuration.DebugLogging)
-            Console.WriteLine("[EventBus] Exiting consume loop.");
+            Console.WriteLine("[EventBus] Shutdown complete");
     }
-
-    public async Task StopConsumingAsync()
-    {
-        if (_consumerTask == null || _cts == null)
-            return;
-
-        _cts.Cancel();
-        _signal.Release();
-
-        await _consumerTask;
-
-        _consumerTask = null;
-        _cts.Dispose();
-        _cts = null;
-    }
-
-    void IAsyncEventBus.AddAsyncSubscriber<T>(IAsyncEventSubscriber<T> subscriber) => throw new NotImplementedException();
 }

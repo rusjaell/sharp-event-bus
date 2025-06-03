@@ -21,6 +21,4 @@ public sealed class DefaultAsyncEventQueue : IEventQueue
     }
 
     public bool TryDequeue(out IEvent? e) => _queue.TryDequeue(out e);
-
-    public static DefaultAsyncEventQueue Default => new DefaultAsyncEventQueue();
 }

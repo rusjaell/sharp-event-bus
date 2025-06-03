@@ -2,8 +2,6 @@
 using SharpEventBus.AsyncExample.Subscribers;
 using SharpEventBus.Bus;
 using SharpEventBus.Configuration;
-using SharpEventBus.Dispatcher;
-using SharpEventBus.Queue;
 
 namespace SharpEventBus.AsyncExample;
 
@@ -14,12 +12,19 @@ internal sealed class Program
         var configuration = EventBusConfigurationBuilder.Create(builder =>
         {
             builder.WithDebugLogging();
+            builder.WithMaxConsumerConcurrency(16);
         });
 
-        var asyncEventBus = new AsyncEventBus(DefaultAsyncEventQueue.Default, DefaultAsyncEventDispatcher.Default, configuration);
+        var asyncEventBus = AsyncEventBusBuilder.Create(builder =>
+        {
+            builder.WithConfiguration(configuration);
+           
+            //builder.WithQueueFactory(() => new DefaultAsyncEventQueue());
+            //builder.WithDispatcherFactory(() => new DefaultAsyncEventDispatcher());
+        });
 
-        asyncEventBus.AddAsyncSubscriber(new OrderPlacedAsyncSubscriber());
-        asyncEventBus.AddAsyncSubscriber(new OrderCancelledAsyncSubscriber());
+        asyncEventBus.AddSubscriber(new OrderPlacedAsyncSubscriber());
+        asyncEventBus.AddSubscriber(new OrderCancelledAsyncSubscriber());
 
         // Setup cancellation token source to allow graceful shutdown
         using var cts = new CancellationTokenSource();
@@ -36,21 +41,17 @@ internal sealed class Program
 
         Console.WriteLine("Starting event publishing loop. Press Ctrl+C to stop.");
 
-        asyncEventBus.StartConsuming();
-
         try
         {
             while (!cts.Token.IsCancellationRequested)
             {
                 PublishRandomOrderEvent(asyncEventBus);
-                await Task.Delay(250, cts.Token);
+                await Task.Delay(Random.Shared.Next(50, 500), cts.Token);
             }
         }
         catch (TaskCanceledException)
         {
         }
-
-        await asyncEventBus.StopConsumingAsync();
 
         Console.WriteLine("Event publishing loop stopped.");
     }
@@ -66,15 +67,17 @@ internal sealed class Program
 
         var orderId = Guid.NewGuid().ToString();
 
+        var count = random.Next(10, 100);
+
         var wasOrderPlaced = random.NextDouble() > 0.5;
         if (wasOrderPlaced)
         {
-            for (var i = 0; i < random.Next(0, 50); i++)
+            for (var i = 0; i < count; i++)
                 asyncEventBus.Publish(new OrderPlacedEvent(orderId, DateTime.UtcNow));
             return;
         }
 
-        for (var i = 0; i < random.Next(0, 50); i++)
+        for (var i = 0; i < count; i++)
             asyncEventBus.Publish(new OrderCancelledEvent(orderId, "Customer Request"));
     }
 }

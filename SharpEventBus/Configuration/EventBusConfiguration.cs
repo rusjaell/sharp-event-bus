@@ -8,9 +8,11 @@ namespace SharpEventBus.Configuration;
 public sealed class EventBusConfiguration
 {
     public readonly bool DebugLogging;
+    public readonly int MaxConsumerConcurrency;
 
-    internal EventBusConfiguration(bool debugLogging)
+    internal EventBusConfiguration(bool debugLogging, int maxConsumerConcurrency)
     {
         DebugLogging = debugLogging;
+        MaxConsumerConcurrency = maxConsumerConcurrency;
     }
 }

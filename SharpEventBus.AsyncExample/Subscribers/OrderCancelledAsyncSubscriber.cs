@@ -7,7 +7,7 @@ public sealed class OrderCancelledAsyncSubscriber : AsyncEventSubscriberBase<Ord
 {
     public override Task OnEventAsync(OrderCancelledEvent e)
     {
-        Console.WriteLine($"Order cancelled: {e.OrderId} reason: {e.Reason}");
+        //Console.WriteLine($"Order cancelled: {e.OrderId} reason: {e.Reason}");
         return Task.CompletedTask;
     }
 }

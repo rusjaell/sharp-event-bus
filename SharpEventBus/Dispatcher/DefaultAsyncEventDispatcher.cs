@@ -16,6 +16,4 @@ public sealed class DefaultAsyncEventDispatcher : IAsyncEventDispatcher
             tasksArray[i] = subscribers[i].OnEventAsync(e);
         await Task.WhenAll(tasksArray);
     }
-
-    public static DefaultAsyncEventDispatcher Default => new DefaultAsyncEventDispatcher();
 }
