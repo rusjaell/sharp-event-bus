@@ -15,8 +15,8 @@ public sealed class AsyncEventBusBuilder
     public static AsyncEventBus Create(Action<AsyncEventBusBuilder>? configure = null)
     {
         var builder = new AsyncEventBusBuilder();
-        builder.WithQueueFactory(() => new DefaultAsyncEventQueue());
-        builder.WithDispatcherFactory(() => new DefaultAsyncEventDispatcher());
+        builder.WithEventQueueFactory(() => new DefaultAsyncEventQueue());
+        builder.WithEventDispatcherFactory(() => new DefaultAsyncEventDispatcher());
         builder.WithConfiguration(EventBusConfigurationBuilder.Create());
 
         configure?.Invoke(builder);
@@ -24,14 +24,14 @@ public sealed class AsyncEventBusBuilder
         return new AsyncEventBus(builder._queueFactory, builder._dispatcherFactory, builder._configuration);
     }
 
-    public AsyncEventBusBuilder WithQueueFactory(Func<IEventQueue> queueFactory)
+    public AsyncEventBusBuilder WithEventQueueFactory(Func<IEventQueue> queueFactory)
     {
         ArgumentNullException.ThrowIfNull(queueFactory);
         _queueFactory = queueFactory;
         return this;
     }
 
-    public AsyncEventBusBuilder WithDispatcherFactory(Func<IAsyncEventDispatcher> dispatcherFactory)
+    public AsyncEventBusBuilder WithEventDispatcherFactory(Func<IAsyncEventDispatcher> dispatcherFactory)
     {
         ArgumentNullException.ThrowIfNull(dispatcherFactory);
         _dispatcherFactory = dispatcherFactory;

@@ -2,6 +2,8 @@
 using SharpEventBus.AsyncExample.Subscribers;
 using SharpEventBus.Bus;
 using SharpEventBus.Configuration;
+using SharpEventBus.Dispatcher;
+using SharpEventBus.Queue;
 
 namespace SharpEventBus.AsyncExample;
 
@@ -18,9 +20,6 @@ internal sealed class Program
         var asyncEventBus = AsyncEventBusBuilder.Create(builder =>
         {
             builder.WithConfiguration(configuration);
-           
-            //builder.WithQueueFactory(() => new DefaultAsyncEventQueue());
-            //builder.WithDispatcherFactory(() => new DefaultAsyncEventDispatcher());
         });
 
         asyncEventBus.AddSubscriber(new OrderPlacedAsyncSubscriber());

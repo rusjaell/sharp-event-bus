@@ -97,10 +97,10 @@ internal sealed class Program
         var wasOrderPlaced = random.NextDouble() > 0.5;
         if (wasOrderPlaced)
         {
-            eventBus.PublishEvent(new OrderPlacedEvent(orderId, DateTime.UtcNow));
+            eventBus.Publish(new OrderPlacedEvent(orderId, DateTime.UtcNow));
             return;
         }
 
-        eventBus.PublishEvent(new OrderCancelledEvent(orderId, "Customer Request"));
+        eventBus.Publish(new OrderCancelledEvent(orderId, "Customer Request"));
     }
 }

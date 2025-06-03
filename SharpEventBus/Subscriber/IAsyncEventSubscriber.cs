@@ -2,19 +2,27 @@
 
 namespace SharpEventBus.Subscriber;
 
+/// <summary>
+/// Represents an asynchronous subscriber that can handle events.
+/// </summary>
 public interface IAsyncEventSubscriber
 {
+    /// <summary>
+    /// Handles the specified event asynchronously.
+    /// </summary>
+    /// <param name="e">The event to handle.</param>
     Task OnEventAsync(IEvent e);
 }
 
+/// <summary>
+/// Represents a strongly-typed asynchronous subscriber for events of type <typeparamref name="T"/>.
+/// </summary>
+/// <typeparam name="T">The type of event to handle.</typeparam>
 public interface IAsyncEventSubscriber<T> : IAsyncEventSubscriber where T : IEvent
 {
+    /// <summary>
+    /// Handles the event of type <typeparamref name="T"/> asynchronously.
+    /// </summary>
+    /// <param name="e">The event to handle.</param>
     Task OnEventAsync(T e);
-}
-
-public abstract class AsyncEventSubscriberBase<T> : IAsyncEventSubscriber<T> where T : IEvent
-{
-    public abstract Task OnEventAsync(T e);
-
-    Task IAsyncEventSubscriber.OnEventAsync(IEvent e) => OnEventAsync((T)e);
 }

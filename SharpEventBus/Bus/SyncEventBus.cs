@@ -1,53 +1,61 @@
 ﻿using SharpEventBus.Configuration;
+using SharpEventBus.Consumer;
 using SharpEventBus.Dispatcher;
 using SharpEventBus.Event;
-using SharpEventBus.Exceptions;
 using SharpEventBus.Queue;
 using SharpEventBus.Subscriber;
-using System.Runtime.InteropServices;
 
 namespace SharpEventBus.Bus;
 
 /// <summary>
-/// An event bus implementation that processes events.
-/// by explicitly calling <see cref="ConsumeEvents"/> or <see cref="ConsumeOneEvent"/>.
+/// Thread-Safe Synchronous implementation of the <see cref="IEventBus"/> interface.
+/// Manages event publishing, subscriber registration, and event consumption using internal consumers.
 /// </summary>
 public sealed class SyncEventBus : IEventBus
 {
-    private readonly Dictionary<Type, List<IEventSubscriber>> _subscribers = new();
-    private readonly IEventQueue _eventQueue;
-    private readonly IEventDispatcher _eventDispatcher;
+    private readonly Func<IEventQueue> _queueFactory;
+    private readonly Func<IEventDispatcher> _dispatcherFactory;
     private readonly EventBusConfiguration _configuration;
+    private readonly Dictionary<Type, IEventConsumer> _consumers = [];
 
     /// <summary>
-    /// Constructs a new instance of the <see cref="SyncEventBus"/> class using the specified event queue, dispatcher, and configuration.
+    /// Initializes a new instance of the <see cref="SyncEventBus"/> class with specified factories and configuration.
     /// </summary>
-    /// <param name="eventQueue">The queue used to store and manage published events.</param>
-    /// <param name="eventDispatcher">The component responsible for dispatching events to subscribers.</param>
-    /// <param name="configuration">The configuration settings for the event bus.</param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown if <paramref name="eventQueue"/>, <paramref name="eventDispatcher"/>, or <paramref name="configuration"/> is <c>null</c>.
-    /// </exception>
-    internal SyncEventBus(IEventQueue? eventQueue, IEventDispatcher? eventDispatcher, EventBusConfiguration? configuration)
+    /// <param name="queueFactory">Factory method to create event queues.</param>
+    /// <param name="dispatcherFactory">Factory method to create event dispatchers.</param>
+    /// <param name="configuration">Configuration options for the event bus.</param>
+    internal SyncEventBus(Func<IEventQueue>? queueFactory, Func<IEventDispatcher>? dispatcherFactory, EventBusConfiguration? configuration)
     {
-        ArgumentNullException.ThrowIfNull(eventQueue);
-        ArgumentNullException.ThrowIfNull(eventDispatcher);
+        ArgumentNullException.ThrowIfNull(queueFactory);
+        ArgumentNullException.ThrowIfNull(dispatcherFactory);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        _eventQueue = eventQueue;
-        _eventDispatcher = eventDispatcher;
+        _queueFactory = queueFactory;
+        _dispatcherFactory = dispatcherFactory;
         _configuration = configuration;
     }
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="e"/> is null.</exception>
-    public void PublishEvent<T>(T e) where T : class, IEvent
+    public void Publish<T>(T e) where T : class, IEvent
     {
         if (_configuration.DebugLogging)
             Console.WriteLine($"[EventBus] PublishEvent: {e.GetType().Name}");
 
         ArgumentNullException.ThrowIfNull(e);
-        _eventQueue.Enqueue(e);
+
+        IEventConsumer? consumer;
+        lock (_consumers)
+            consumer = _consumers.GetValueOrDefault(typeof(T));
+
+        if (consumer == null)
+        {
+            if (_configuration.DebugLogging)
+                Console.WriteLine($"[EventBus] No consumer found for event type {typeof(T).Name}");
+            return;
+        }
+
+        consumer.Enqueue(e);
     }
 
     /// <inheritdoc/>
@@ -56,69 +64,53 @@ public sealed class SyncEventBus : IEventBus
     {
         ArgumentNullException.ThrowIfNull(subscriber);
 
-        var type = typeof(T);
-
-        ref var list = ref CollectionsMarshal.GetValueRefOrAddDefault(_subscribers, type, out var exists);
-        if (!exists || list == null)
-            list = [];
-
-        list.Add(subscriber);
-
         if (_configuration.DebugLogging)
-            Console.WriteLine($"[EventBus] Subscribe: {type.Name} was added to list of Subscribers now has {_subscribers.Count} active Subscribers");
+            Console.WriteLine($"[EventBus] Adding subscriber {subscriber.GetType().Name} for {typeof(T).Name}");
+
+        var consumer = GetOrCreateConsumer<T>();
+        consumer.AddSubscriber(subscriber);
     }
 
     /// <inheritdoc/>
-    /// <exception cref="EventQueueTryDequeueException">Thrown if a null event is unexpectedly dequeued.</exception>
     public void ConsumeEvents()
     {
-        if (_configuration.DebugLogging)
-            Console.WriteLine($"[EventBus] ConsumeEvents: {_eventQueue.Count} in Queue");
-
-        while (_eventQueue.TryDequeue(out var e))
+        lock (_consumers)
         {
-            if (e == null)
-                EventQueueTryDequeueException.Throw();
-            DispatchEvent(e);
+            foreach(var consumer in _consumers.Values)
+                consumer.ConsumeEvents();
         }
-    }
-
-    /// <inheritdoc/>
-    /// <exception cref="EventQueueTryDequeueException">Thrown if a null event is unexpectedly dequeued.</exception>
-    public bool ConsumeOneEvent()
-    {
-        if (_configuration.DebugLogging)
-            Console.WriteLine($"[EventBus] ConsumeOneEvent: {_eventQueue.Count} in Queue");
-
-        if (_eventQueue.TryDequeue(out var e))
-        {
-            if (e == null)
-                EventQueueTryDequeueException.Throw();
-            DispatchEvent(e);
-            return true;
-        }
-        return false;
     }
 
     /// <summary>
-    /// Dispatches the specified event to all registered handlers.
+    /// Retrieves an existing consumer for the specified event type or creates a new one if none exists.
     /// </summary>
-    /// <param name="e">The event to dispatch.</param>
-    internal void DispatchEvent(IEvent e)
+    /// <typeparam name="T">The type of event the consumer will handle.</typeparam>
+    /// <returns>The event consumer for the specified event type.</returns>
+    private IEventConsumer GetOrCreateConsumer<T>() where T : class, IEvent
     {
-        var type = e.GetType();
+        var type = typeof(T);
 
-        if (!_subscribers.TryGetValue(type, out var handlers))
+        lock (_consumers)
         {
-            if (_configuration.DebugLogging)
-                Console.WriteLine($"[EventBus] DispatchEvent: There is no Subscribers for event: {type.Name}");
-            return;
+            if (_consumers.TryGetValue(type, out var consumer))
+                return consumer;
         }
 
+        var queue = _queueFactory.Invoke();
+        var dispatcher = _dispatcherFactory.Invoke();
+
+        var newConsumer = new DefaultEventConsumer(dispatcher, queue, _configuration.DebugLogging);
+
         if (_configuration.DebugLogging)
-            Console.WriteLine($"[EventBus] DispatchEvent: {type.Name}");
-        
-        var span = CollectionsMarshal.AsSpan(handlers);
-        _eventDispatcher.Dispatch(e, in span);
+            Console.WriteLine($"[EventBus] Created consumer for {type.Name}");
+
+        lock (_consumers)
+        {
+            if (_consumers.TryGetValue(type, out var consumer))
+                return consumer;
+
+            _consumers.Add(type, newConsumer);
+        }
+        return newConsumer;
     }
 }

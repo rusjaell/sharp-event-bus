@@ -1,4 +1,5 @@
-﻿using SharpEventBus.Dispatcher;
+﻿using SharpEventBus.Configuration;
+using SharpEventBus.Dispatcher;
 using SharpEventBus.Event;
 using SharpEventBus.Exceptions;
 using SharpEventBus.Queue;
@@ -7,11 +8,15 @@ using System.Collections.Immutable;
 
 namespace SharpEventBus.Consumer;
 
-internal class DefaultAsyncEventConsumerWorker : IAsyncEventConsumer
+/// <summary>
+/// Thread-safe default implementation of <see cref="IAsyncEventConsumer"/> that
+/// processes events concurrently with a maximum concurrency limit, manages subscribers, and optionally logs diagnostic information.
+/// </summary>
+internal class DefaultAsyncEventConsumer : IAsyncEventConsumer
 {
     private readonly IEventQueue _queue;
     private readonly IAsyncEventDispatcher _dispatcher;
-    private ImmutableArray<IAsyncEventSubscriber> _subscribers = ImmutableArray<IAsyncEventSubscriber>.Empty;
+    private ImmutableArray<IAsyncEventSubscriber> _subscribers = [];
 
     private readonly SemaphoreSlim _queueSignal = new SemaphoreSlim(0);
     private readonly bool _debugLogging;
@@ -19,25 +24,40 @@ internal class DefaultAsyncEventConsumerWorker : IAsyncEventConsumer
     private long _processedEvents;
     private long _completedTasks;
 
-    internal DefaultAsyncEventConsumerWorker(IAsyncEventDispatcher dispatcher, IEventQueue queue, bool debugLogging, int maxConsumerConcurrency)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DefaultAsyncEventConsumer"/> class
+    /// using the specified dispatcher, event queue, and configuration settings.
+    /// </summary>
+    /// <param name="dispatcher">The asynchronous event dispatcher used to invoke subscribers.</param>
+    /// <param name="queue">The event queue used to store and retrieve events.</param>
+    /// <param name="configuration">The configuration containing debug logging and concurrency options.</param>
+    internal DefaultAsyncEventConsumer(IAsyncEventDispatcher dispatcher, IEventQueue queue, EventBusConfiguration configuration)
     {
         _dispatcher = dispatcher;
         _queue = queue;
-        _debugLogging = debugLogging;
-        _maxConsumerConcurrency = maxConsumerConcurrency;
+        _debugLogging = configuration.DebugLogging;
+        _maxConsumerConcurrency = configuration.MaxConsumerConcurrency;
     }
 
-    public void AddAsyncSubscriber(IAsyncEventSubscriber subscriber)
-    {
-        ImmutableInterlocked.Update(ref _subscribers, list => list.Add(subscriber));
-    }
-
+    /// <inheritdoc/>
     public void Enqueue(IEvent e)
     {
         _queue.Enqueue(e);
         _queueSignal.Release();
     }
 
+    /// <inheritdoc/>
+    public void AddSubscriber(IAsyncEventSubscriber subscriber)
+    {
+        ImmutableInterlocked.Update(ref _subscribers, list => list.Add(subscriber));
+    }
+
+    /// <summary>
+    /// Runs the consumer asynchronously until cancellation is requested,
+    /// processing events with concurrency limits and optional debug logging.
+    /// </summary>
+    /// <param name="token">Cancellation token to stop the consumer.</param>
+    /// <returns>A task representing the lifetime of the running consumer.</returns>
     public async Task RunAsync(CancellationToken token)
     {
         if (_debugLogging)
@@ -59,7 +79,7 @@ internal class DefaultAsyncEventConsumerWorker : IAsyncEventConsumer
 
                     while (!token.IsCancellationRequested)
                     {
-                        await Task.Delay(1000, token);
+                        await Task.Delay(1000, token).ConfigureAwait(false);
 
                         var currentProcessed = Interlocked.Read(ref _processedEvents);
                         var currentCompleted = Interlocked.Read(ref _completedTasks);
@@ -84,7 +104,8 @@ internal class DefaultAsyncEventConsumerWorker : IAsyncEventConsumer
 
         while (!token.IsCancellationRequested)
         {
-            await _queueSignal.WaitAsync(token);
+            await _queueSignal.WaitAsync(token).ConfigureAwait(false);
+
 
             while (_queue.TryDequeue(out var e))
             {
@@ -92,9 +113,9 @@ internal class DefaultAsyncEventConsumerWorker : IAsyncEventConsumer
                     EventQueueTryDequeueException.Throw();
 
                 if (runningTasks.Count >= _maxConsumerConcurrency)
-                    await Task.WhenAny(runningTasks);
+                    await Task.WhenAny(runningTasks).ConfigureAwait(false);
 
-                await concurrencySemaphore.WaitAsync(token);
+                await concurrencySemaphore.WaitAsync(token).ConfigureAwait(false);
                 Interlocked.Increment(ref _processedEvents);
 
                 var dispatchTask = DispatchEventAsync(e, _subscribers, concurrencySemaphore, token);
@@ -108,13 +129,13 @@ internal class DefaultAsyncEventConsumerWorker : IAsyncEventConsumer
         if (_debugLogging)
             Console.WriteLine("[EventConsumer] Consumer finishing tasks");
 
-        await Task.WhenAll(runningTasks);
+        await Task.WhenAll(runningTasks).ConfigureAwait(false);
 
         if (_debugLogging)
         {
             try
             {
-                await monitorTask;
+                await monitorTask.ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -124,11 +145,19 @@ internal class DefaultAsyncEventConsumerWorker : IAsyncEventConsumer
         }
     }
 
+    /// <summary>
+    /// Dispatches the event to subscribers asynchronously, handling exceptions,
+    /// and releases the concurrency semaphore once done.
+    /// </summary>
+    /// <param name="e">The event to dispatch.</param>
+    /// <param name="subscribers">The list of subscribers to notify.</param>
+    /// <param name="concurrencySemaphore">Semaphore controlling concurrency.</param>
+    /// <param name="token">Cancellation token.</param>
     private async Task DispatchEventAsync(IEvent e, IReadOnlyList<IAsyncEventSubscriber> subscribers, SemaphoreSlim concurrencySemaphore, CancellationToken token)
     {
         try
         {
-            await _dispatcher.DispatchAsync(e, subscribers);
+                await _dispatcher.DispatchAsync(e, subscribers).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
