@@ -21,7 +21,7 @@ SharpEventBus provides thread-safe asynchronous and synchronous event bus implem
 - ❌ Event Filtering 
 - ❌ Event Priorities
 - ❌ Event Scheduler
-- ❌ Better Factory/Builder Support  
+- ❌ Better Factory/Builder Support (Automatic Construction)
 - ❌ User-Implemented Event Consumer Support 
 
 ## Syncronous Example
@@ -64,12 +64,12 @@ var eventBus = SyncEventBusBuilder.Create(options =>
 // Subscribe to events
 
 // Manually Create and add a subscriber
-var orderPlacedSubscriber = asyncEventBus.AddSubscriber(new OrderPlacedAsyncSubscriber());
-var orderCancelledSubscriber = asyncEventBus.AddSubscriber(new OrderCancelledAsyncSubscriber());
+var orderPlacedSubscriber = eventBus.AddSubscriber(new OrderPlacedAsyncSubscriber());
+var orderCancelledSubscriber = eventBus.AddSubscriber(new OrderCancelledAsyncSubscriber());
 
 // Automatically Create and add a subscriber
-var orderPlacedSubscriber = asyncEventBus.RegisterSubscriber<OrderPlacedAsyncSubscriber, OrderPlacedEvent>();
-var orderCancelledSubscriber = asyncEventBus.RegisterSubscriber<OrderCancelledAsyncSubscriber, OrderCancelledEvent>();
+var orderPlacedSubscriber = eventBus.RegisterSubscriber<OrderPlacedAsyncSubscriber, OrderPlacedEvent>();
+var orderCancelledSubscriber = eventBus.RegisterSubscriber<OrderCancelledAsyncSubscriber, OrderCancelledEvent>();
 
 // Publish an event to subscribers
 eventBus.Publish(new OrderPlacedEvent("Order123", DateTime.UtcNow));
@@ -133,13 +133,12 @@ var eventBus = SyncEventBusBuilder.Create(options =>
 // Note - Will automatically start to Consume events related to subscriber once the subscriber is added
 
 // Manually Create and add a subscriber
-//var orderPlacedSubscriber = eventBus.AddSubscriber(new OrderPlacedSubscriber());
-//var orderCancelledSubscriber = eventBus.AddSubscriber(new OrderCancelledSubscriber());
+//var orderPlacedSubscriber = asyncEventBus.AddSubscriber(new OrderPlacedSubscriber());
+//var orderCancelledSubscriber = asyncEventBus.AddSubscriber(new OrderCancelledSubscriber());
 
 // Automatically Create and add a subscriber
 var orderPlacedSubscriber = eventBus.RegisterSubscriber<OrderPlacedSubscriber, OrderPlacedEvent>();
 var orderCancelledSubscriber = eventBus.RegisterSubscriber<OrderCancelledSubscriber, OrderCancelledEvent>();
-
 
 // Publish an event to subscribers
 asyncEventBus.Publish(new OrderPlacedEvent("Order123", DateTime.UtcNow));
