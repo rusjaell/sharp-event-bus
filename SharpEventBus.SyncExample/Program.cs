@@ -40,9 +40,13 @@ internal sealed class Program
         //    options.WithEventDispatcherFactory(() => new CustomEventDispatcher());
         //});
 
-        // Creates a Subscriber for the OrderPlacedEvent events
-        eventBus.AddSubscriber(new OrderPlacedSubscriber());
-        eventBus.AddSubscriber(new OrderCancelledSubscriber());
+        // Manually Create and add a subscriber
+        //var orderPlacedSubscriber = eventBus.AddSubscriber(new OrderPlacedSubscriber());
+        //var orderCancelledSubscriber = eventBus.AddSubscriber(new OrderCancelledSubscriber());
+
+        // Automatically Create and add a subscriber
+        var orderPlacedSubscriber = eventBus.RegisterSubscriber<OrderPlacedSubscriber, OrderPlacedEvent>();
+        var orderCancelledSubscriber = eventBus.RegisterSubscriber<OrderCancelledSubscriber, OrderCancelledEvent>();
 
         // Setup cancellation token source to allow graceful shutdown
         using var cts = new CancellationTokenSource();

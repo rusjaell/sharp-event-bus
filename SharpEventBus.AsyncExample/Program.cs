@@ -20,8 +20,13 @@ internal sealed class Program
             builder.WithConfiguration(configuration);
         });
 
-        asyncEventBus.AddSubscriber(new OrderPlacedAsyncSubscriber());
-        asyncEventBus.AddSubscriber(new OrderCancelledAsyncSubscriber());
+        // Manually Create and add a subscriber
+        //var orderPlacedSubscriber = asyncEventBus.AddSubscriber(new OrderPlacedAsyncSubscriber());
+        //var orderCancelledSubscriber = asyncEventBus.AddSubscriber(new OrderCancelledAsyncSubscriber());
+
+        // Automatically Create and add a subscriber
+        var orderPlacedSubscriber = asyncEventBus.RegisterSubscriber<OrderPlacedAsyncSubscriber, OrderPlacedEvent>();
+        var orderCancelledSubscriber = asyncEventBus.RegisterSubscriber<OrderCancelledAsyncSubscriber, OrderCancelledEvent>();
 
         // Setup cancellation token source to allow graceful shutdown
         using var cts = new CancellationTokenSource();

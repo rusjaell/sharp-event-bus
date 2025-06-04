@@ -62,7 +62,14 @@ var eventBus = SyncEventBusBuilder.Create(options =>
 });
 
 // Subscribe to events
-eventBus.AddSubscriber(new OrderPlacedSubscriber());
+
+// Manually Create and add a subscriber
+var orderPlacedSubscriber = asyncEventBus.AddSubscriber(new OrderPlacedAsyncSubscriber());
+var orderCancelledSubscriber = asyncEventBus.AddSubscriber(new OrderCancelledAsyncSubscriber());
+
+// Automatically Create and add a subscriber
+var orderPlacedSubscriber = asyncEventBus.RegisterSubscriber<OrderPlacedAsyncSubscriber, OrderPlacedEvent>();
+var orderCancelledSubscriber = asyncEventBus.RegisterSubscriber<OrderCancelledAsyncSubscriber, OrderCancelledEvent>();
 
 // Publish an event to subscribers
 eventBus.Publish(new OrderPlacedEvent("Order123", DateTime.UtcNow));
@@ -124,7 +131,15 @@ var eventBus = SyncEventBusBuilder.Create(options =>
 
 // Subscribe to events
 // Note - Will automatically start to Consume events related to subscriber once the subscriber is added
-asyncEventBus.AddSubscriber(new OrderPlacedAsyncSubscriber());
+
+// Manually Create and add a subscriber
+//var orderPlacedSubscriber = eventBus.AddSubscriber(new OrderPlacedSubscriber());
+//var orderCancelledSubscriber = eventBus.AddSubscriber(new OrderCancelledSubscriber());
+
+// Automatically Create and add a subscriber
+var orderPlacedSubscriber = eventBus.RegisterSubscriber<OrderPlacedSubscriber, OrderPlacedEvent>();
+var orderCancelledSubscriber = eventBus.RegisterSubscriber<OrderCancelledSubscriber, OrderCancelledEvent>();
+
 
 // Publish an event to subscribers
 asyncEventBus.Publish(new OrderPlacedEvent("Order123", DateTime.UtcNow));

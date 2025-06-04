@@ -37,7 +37,7 @@ public sealed class SyncEventBus : IEventBus
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="e"/> is null.</exception>
-    public void Publish<T>(T e) where T : class, IEvent
+    public void Publish<TEvent>(TEvent e) where TEvent : class, IEvent
     {
         if (_configuration.DebugLogging)
             Console.WriteLine($"[EventBus] PublishEvent: {e.GetType().Name}");
@@ -46,12 +46,12 @@ public sealed class SyncEventBus : IEventBus
 
         IEventConsumer? consumer;
         lock (_consumers)
-            consumer = _consumers.GetValueOrDefault(typeof(T));
+            consumer = _consumers.GetValueOrDefault(typeof(TEvent));
 
         if (consumer == null)
         {
             if (_configuration.DebugLogging)
-                Console.WriteLine($"[EventBus] No consumer found for event type {typeof(T).Name}");
+                Console.WriteLine($"[EventBus] No consumer found for event type {typeof(TEvent).Name}");
             return;
         }
 
@@ -60,15 +60,40 @@ public sealed class SyncEventBus : IEventBus
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="subscriber"/> is null.</exception>
-    public void AddSubscriber<T>(IEventSubscriber<T> subscriber) where T : class, IEvent
+    public IEventSubscriber<TEvent> AddSubscriber<TEvent>(IEventSubscriber<TEvent> subscriber) where TEvent : class, IEvent
     {
         ArgumentNullException.ThrowIfNull(subscriber);
 
         if (_configuration.DebugLogging)
-            Console.WriteLine($"[EventBus] Adding subscriber {subscriber.GetType().Name} for {typeof(T).Name}");
+            Console.WriteLine($"[EventBus] Adding subscriber {subscriber.GetType().Name}<{typeof(TEvent).Name}>");
 
-        var consumer = GetOrCreateConsumer<T>();
+        var consumer = GetOrCreateConsumer<TEvent>();
         consumer.AddSubscriber(subscriber);
+        return subscriber;
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="subscriber"/> is null.</exception>
+    public TSubscriber RegisterSubscriber<TSubscriber, TEvent>(params object[] args) 
+        where TSubscriber : class, IEventSubscriber<TEvent>//, new()
+        where TEvent : class, IEvent
+    {
+        var type = typeof(TSubscriber);
+
+        TSubscriber? subscriber; // = new TSubscriber();
+        if (args.Length > 0)
+            subscriber = Activator.CreateInstance(type, args) as TSubscriber;
+        else
+            subscriber = (TSubscriber?)Activator.CreateInstance<TSubscriber>();
+
+        ArgumentNullException.ThrowIfNull(subscriber);
+
+        if (_configuration.DebugLogging)
+            Console.WriteLine($"[EventBus] Adding subscriber {subscriber.GetType().Name}<{typeof(TEvent).Name}>");
+
+        var consumer = GetOrCreateConsumer<TEvent>();
+        consumer.AddSubscriber(subscriber);
+        return subscriber;
     }
 
     /// <inheritdoc/>
@@ -84,11 +109,11 @@ public sealed class SyncEventBus : IEventBus
     /// <summary>
     /// Retrieves an existing consumer for the specified event type or creates a new one if none exists.
     /// </summary>
-    /// <typeparam name="T">The type of event the consumer will handle.</typeparam>
+    /// <typeparam name="TEvent">The type of event the consumer will handle.</typeparam>
     /// <returns>The event consumer for the specified event type.</returns>
-    private IEventConsumer GetOrCreateConsumer<T>() where T : class, IEvent
+    private IEventConsumer GetOrCreateConsumer<TEvent>() where TEvent : class, IEvent
     {
-        var type = typeof(T);
+        var type = typeof(TEvent);
 
         lock (_consumers)
         {

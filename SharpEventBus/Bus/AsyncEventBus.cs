@@ -40,18 +40,18 @@ public sealed class AsyncEventBus : IAsyncEventBus
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="e"/> is null.</exception>
-    public void Publish<T>(T e) where T : class, IEvent
+    public void Publish<TEvent>(TEvent e) where TEvent : class, IEvent
     {
         ArgumentNullException.ThrowIfNull(e);
 
         IAsyncEventConsumer? consumer;
         lock (_consumers)
-            consumer = _consumers.GetValueOrDefault(typeof(T));
+            consumer = _consumers.GetValueOrDefault(typeof(TEvent));
 
         if (consumer == null)
         {
             if (_configuration.DebugLogging)
-                Console.WriteLine($"[EventBus] No consumer found for event type {typeof(T).Name}");
+                Console.WriteLine($"[EventBus] No consumer found for event type {typeof(TEvent).Name}");
             return;
         }
 
@@ -60,26 +60,52 @@ public sealed class AsyncEventBus : IAsyncEventBus
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="subscriber"/> is null.</exception>
-    public void AddSubscriber<T>(IAsyncEventSubscriber<T> subscriber) where T : class, IEvent
+    public IAsyncEventSubscriber<TEvent> AddSubscriber<TEvent>(IAsyncEventSubscriber<TEvent> subscriber) where TEvent : class, IEvent
     {
         ArgumentNullException.ThrowIfNull(subscriber);
 
         if (_configuration.DebugLogging)
-            Console.WriteLine($"[EventBus] Adding subscriber {subscriber.GetType().Name} for {typeof(T).Name}");
+            Console.WriteLine($"[EventBus] Adding subscriber {subscriber.GetType().Name}<{typeof(TEvent).Name}>");
 
-        var consumer = GetOrCreateConsumer<T>();
+        var consumer = GetOrCreateConsumer<TEvent>();
         consumer.AddSubscriber(subscriber);
+
+        return subscriber;
     }
 
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="subscriber"/> is null.</exception>
+    public TSubscriber RegisterSubscriber<TSubscriber, TEvent>(params object[] args)
+        where TSubscriber : class, IAsyncEventSubscriber<TEvent>//, new()
+        where TEvent : class, IEvent
+    {
+        var type = typeof(TSubscriber);
+
+        TSubscriber? subscriber; // = new TSubscriber();
+        if (args.Length > 0)
+            subscriber = Activator.CreateInstance(type, args) as TSubscriber;
+        else
+            subscriber = (TSubscriber?)Activator.CreateInstance<TSubscriber>();
+
+        ArgumentNullException.ThrowIfNull(subscriber);
+
+        if (_configuration.DebugLogging)
+            Console.WriteLine($"[EventBus] Adding subscriber {type.Name}<{typeof(TEvent).Name}>");
+
+        AddSubscriber(subscriber);
+        return subscriber;
+    }
+
+
     /// <summary>
-    /// Retrieves or creates a dedicated <see cref="IAsyncEventConsumer"/> for the given event type <typeparamref name="T"/>.
+    /// Retrieves or creates a dedicated <see cref="IAsyncEventConsumer"/> for the given event type <typeparamref name="TEvent"/>.
     /// Ensures that only one consumer exists per event type. The method is thread-safe.
     /// </summary>
-    /// <typeparam name="T">The type of event to get or create a consumer for. Must implement <see cref="IEvent"/>.</typeparam>
+    /// <typeparam name="TEvent">The type of event to get or create a consumer for. Must implement <see cref="IEvent"/>.</typeparam>
     /// <returns>The <see cref="IAsyncEventConsumer"/> associated with the specified event type.</returns>
-    private IAsyncEventConsumer GetOrCreateConsumer<T>() where T : class, IEvent
+    private IAsyncEventConsumer GetOrCreateConsumer<TEvent>() where TEvent : class, IEvent
     {
-        var type = typeof(T);
+        var type = typeof(TEvent);
 
         lock (_consumers)
         {

@@ -6,12 +6,12 @@ namespace SharpEventBus.Subscriber;
 /// Abstract base class for implementing strongly-typed asynchronous event subscribers.
 /// Automatically handles casting from the non-generic interface.
 /// </summary>
-/// <typeparam name="T">The type of event to handle.</typeparam>
-public abstract class AsyncEventSubscriberBase<T> : IAsyncEventSubscriber<T> where T : IEvent
+/// <typeparam name="TEvent">The type of event to handle.</typeparam>
+public abstract class AsyncEventSubscriberBase<TEvent> : IAsyncEventSubscriber<TEvent> where TEvent : IEvent
 {
     /// <inheritdoc/>
-    public abstract Task OnEventAsync(T e);
+    public abstract Task OnEventAsync(TEvent e);
 
     /// <inheritdoc/>
-    Task IAsyncEventSubscriber.OnEventAsync(IEvent e) => OnEventAsync((T)e);
+    Task IAsyncEventSubscriber.OnEventAsync(IEvent e) => OnEventAsync((TEvent)e);
 }
